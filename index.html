@@ -104,6 +104,8 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .meal li .nm{min-width:0}
 .meal li .nm div{overflow-wrap:anywhere}
 .meal li .sub{font-size:12px;color:var(--muted)}
+.mc{display:inline-flex;align-items:center;gap:4px;margin-right:10px;white-space:nowrap}
+.mc i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
 .tag{font-size:10px;letter-spacing:.06em;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px;border:1px solid var(--accent);color:var(--accent)}
 .del{border:0;background:none;color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:18px;line-height:1}
 .del:hover{background:var(--accent-soft);color:var(--ink)}
@@ -537,6 +539,15 @@ async function shrinkToDataUrl(file){
 }
 
 /* ---------- render ---------- */
+/* "portion · ●5g ●62g ●0.5g", dots colored like the protein / carb / fat bars */
+function macroLine(el,portion,p,c,f){
+  el.textContent=portion?portion+" · ":"";
+  for(const [v,col,name] of [[p,"--pro","蛋白質"],[c,"--carb","碳水"],[f,"--fat","脂肪"]]){
+    const s=document.createElement("span"); s.className="mc"; s.title=name; s.setAttribute("aria-label",name+" "+r1(v)+" 公克");
+    const d=document.createElement("i"); d.style.background=`var(${col})`;
+    s.append(d,r1(v)+"g"); el.append(s);
+  }
+}
 function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i.p||0),c:a.c+(+i.c||0),f:a.f+(+i.f||0)}),{k:0,p:0,c:0,f:0})}
 /* base goal plus the counted share of that day's active energy; the extra goes to carbs */
 function goalFor(k){
@@ -591,7 +602,7 @@ function render(){
         const nm=li.querySelector(".nm div");
         nm.textContent=it.name;
         if(it.src&&it.src!=="manual"){const tg=document.createElement("span");tg.className="tag";tg.textContent=it.src==="photo"?"拍照 AI":"AI";nm.append(tg)}
-        li.querySelector(".sub").textContent=(it.portion?it.portion+" · ":"")+`P ${r1(it.p)} · C ${r1(it.c)} · F ${r1(it.f)}`;
+        macroLine(li.querySelector(".sub"),it.portion,it.p,it.c,it.f);
         li.children[1].textContent=Math.round(it.kcal);
         li.querySelector(".del").onclick=()=>removeItem(it.id);
         ul.append(li);
@@ -667,7 +678,7 @@ function showCands(target,res,src){
     const cb=c.querySelector("[type=checkbox]"),nm=c.querySelector(".nm"),kc=c.querySelector(".kc"),mul=c.querySelector("select");
     nm.value=x.name; kc.value=x.kcal;
     const sub=c.querySelector(".sub");
-    const upd=()=>{const m=+mul.value;sub.textContent=(x.portion?x.portion+" · ":"")+`P ${r1(x.p*m)} · C ${r1(x.c*m)} · F ${r1(x.f*m)}`};
+    const upd=()=>{const m=+mul.value;macroLine(sub,x.portion,x.p*m,x.c*m,x.f*m)};
     mul.onchange=()=>{kc.value=Math.round(x.kcal*mul.value);upd()}; upd();
     c._get=()=>{if(!cb.checked)return null;const m=+mul.value;const k=Math.max(0,+kc.value||0);const ratio=x.kcal?k/(x.kcal*m):1;
       return{name:nm.value.trim()||x.name,portion:x.portion+(m!==1?` ×${m}`:""),kcal:k,p:x.p*m*ratio,c:x.c*m*ratio,f:x.f*m*ratio}};
