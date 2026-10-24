@@ -476,19 +476,25 @@ async function pullMonth(m){
   const dirty=cache.dirtyMonths.includes(m);
   for(const field of ["days","activity"]){
     const remote=(got.data&&got.data[field])||{}, local=cache[field];
-    for(const k in remote){ if(!(dirty&&local[k])) local[k]=remote[k] }
+    for(const k in remote){
+      /* activity entries carry a timestamp, so the newer one wins (e.g. Health numbers sent from Safari) */
+      if(field==="activity"&&local[k]) local[k]=newerAct(local[k],remote[k]);
+      else if(!(dirty&&local[k])) local[k]=remote[k];
+    }
     if(!dirty) for(const k in local) if(monthOf(k)===m&&!remote[k]) delete local[k];
   }
 }
+const newerAct=(a,b)=>!b?a:!a?b:((b.t||0)>(a.t||0)?b:a);
 async function pushMonth(m){
   const path=monthPath(m);
   try{ cache.shas[path]=await ghPut(path,{days:monthDays(m),activity:monthAct(m)},cache.shas[path],"紀錄 "+m) }
   catch(e){
     if(e&&(e.status===409||e.status===422)){
       const got=await ghGet(path), rd=(got&&got.data)||{};
-      const days=Object.assign({},rd.days||{},monthDays(m)), act=Object.assign({},rd.activity||{},monthAct(m));
+      const days=Object.assign({},rd.days||{},monthDays(m)), act=Object.assign({},rd.activity||{}), mine=monthAct(m);
+      for(const k in mine) act[k]=newerAct(mine[k],act[k]);
       for(const k in days) if(!cache.days[k]) cache.days[k]=days[k];
-      for(const k in act) if(!cache.activity[k]) cache.activity[k]=act[k];
+      for(const k in act) cache.activity[k]=act[k];
       cache.shas[path]=await ghPut(path,{days,activity:act},got&&got.sha,"紀錄 "+m);
     } else throw e;
   }
