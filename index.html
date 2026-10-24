@@ -457,7 +457,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 /* ---------- config + local cache ---------- */
 const CFG="shike:cfg", CACHE="shike:cache";
 let cfg=Object.assign({owner:"",repo:"shike-data",token:"",dsKey:"",dsModel:"deepseek-flash"},lsGet(CFG,{}));
-const cache=Object.assign({days:{},activity:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false,pendingPhotos:[],myfoods:[],dirtyMy:false},lsGet(CACHE,{}));
+const cache=Object.assign({days:{},activity:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false,pendingPhotos:[],myfoods:[],dirtyMy:false,del:{},healthSeen:{}},lsGet(CACHE,{}));
 const state={date:keyOf(new Date())};
 const defaultProfile={goal:{kcal:1800,p:110,c:200,f:60},body:{}};
 const profile=()=>cache.profile||defaultProfile;
@@ -485,6 +485,21 @@ async function ghPut(path,data,sha,msg){
 }
 const monthPath=m=>`data/${m}.json`;
 function monthDays(m){const o={};for(const k in cache.days)if(monthOf(k)===m&&cache.days[k].length)o[k]=cache.days[k];return o}
+/* deleted item ids {id:{k,t}} travel with the month file so another page can't bring them back */
+function monthDel(m){const o={},cut=Date.now()-60*864e5;for(const id in cache.del){const d=cache.del[id];if(d.t<cut)delete cache.del[id];else if(monthOf(d.k)===m)o[id]=d}return o}
+const itemT=it=>it.mt||it.t||0;
+/* merge one month of food items. Not dirty: the remote copy is simply newer. Dirty (this page has
+   unsent edits): union by item id, newer edit wins, deletions win over older copies. */
+function mergeDays(m,rdays,rdel,dirty){
+  for(const id in rdel) if(!cache.del[id]||cache.del[id].t<rdel[id].t) cache.del[id]=rdel[id];
+  const keys=new Set(Object.keys(rdays).concat(Object.keys(cache.days).filter(k=>monthOf(k)===m)));
+  for(const k of keys){
+    if(!dirty){if(rdays[k])cache.days[k]=rdays[k];else delete cache.days[k];continue}
+    const by=new Map();
+    for(const it of (rdays[k]||[]).concat(cache.days[k]||[])){const o=by.get(it.id);if(!o||itemT(it)>=itemT(o))by.set(it.id,it)}
+    cache.days[k]=[...by.values()].filter(it=>{const d=cache.del[it.id];return !d||d.t<itemT(it)}).sort((a,b)=>(a.t||0)-(b.t||0));
+  }
+}
 function monthAct(m){const o={};for(const k in cache.activity)if(monthOf(k)===m)o[k]=cache.activity[k];return o}
 
 /* ---------- photos ----------
@@ -555,31 +570,66 @@ async function pullMonth(m){
   pulled.add(m);
   if(!got){return}
   cache.shas[monthPath(m)]=got.sha;
-  const dirty=cache.dirtyMonths.includes(m);
-  for(const field of ["days","activity"]){
-    const remote=(got.data&&got.data[field])||{}, local=cache[field];
-    for(const k in remote){
-      /* activity entries carry a timestamp, so the newer one wins (e.g. Health numbers sent from Safari) */
-      if(field==="activity"&&local[k]) local[k]=newerAct(local[k],remote[k]);
-      else if(!(dirty&&local[k])) local[k]=remote[k];
-    }
-    if(!dirty) for(const k in local) if(monthOf(k)===m&&!remote[k]) delete local[k];
-  }
+  const dirty=cache.dirtyMonths.includes(m), rd=got.data||{};
+  mergeDays(m,rd.days||{},rd.del||{},dirty);
+  /* activity entries carry a timestamp, so the newer one wins (e.g. Health numbers sent from another page) */
+  const remote=rd.activity||{}, local=cache.activity;
+  for(const k in remote) local[k]=local[k]?newerAct(local[k],remote[k]):remote[k];
+  if(!dirty) for(const k in local) if(monthOf(k)===m&&!remote[k]) delete local[k];
 }
 const newerAct=(a,b)=>!b?a:!a?b:((b.t||0)>(a.t||0)?b:a);
 async function pushMonth(m){
   const path=monthPath(m);
-  try{ cache.shas[path]=await ghPut(path,{days:monthDays(m),activity:monthAct(m)},cache.shas[path],"紀錄 "+m) }
+  const body=()=>({days:monthDays(m),activity:monthAct(m),del:monthDel(m)});
+  try{ cache.shas[path]=await ghPut(path,body(),cache.shas[path],"紀錄 "+m) }
   catch(e){
     if(e&&(e.status===409||e.status===422)){
+      /* someone else wrote this month: take their newer days, keep ours where ours are newer */
       const got=await ghGet(path), rd=(got&&got.data)||{};
-      const days=Object.assign({},rd.days||{},monthDays(m)), act=Object.assign({},rd.activity||{}), mine=monthAct(m);
-      for(const k in mine) act[k]=newerAct(mine[k],act[k]);
-      for(const k in days) if(!cache.days[k]) cache.days[k]=days[k];
-      for(const k in act) cache.activity[k]=act[k];
-      cache.shas[path]=await ghPut(path,{days,activity:act},got&&got.sha,"紀錄 "+m);
+      mergeDays(m,rd.days||{},rd.del||{},true);
+      const ra=rd.activity||{};
+      for(const k in ra) cache.activity[k]=newerAct(cache.activity[k],ra[k]);
+      cache.shas[path]=await ghPut(path,body(),got&&got.sha,"紀錄 "+m);
+      render();
     } else throw e;
   }
+}
+/* Health numbers written by the iOS shortcut straight to the data repo, one small file per run:
+   health/YYYY-MM-DD_yyyyMMddHHmmss.json = {"d":…,"a":…,"s":…}. The newest file per day is applied
+   (unless a manual entry is newer); superseded or old files are cleaned up. */
+const HEALTH_RE=/^(\d{4}-\d{2}-\d{2})_(\d{14})\.json$/;
+const tsMs=s=>new Date(+s.slice(0,4),+s.slice(4,6)-1,+s.slice(6,8),+s.slice(8,10),+s.slice(10,12),+s.slice(12,14)).getTime();
+async function ghList(dir){
+  const r=await fetch(ghUrl(dir)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
+  if(r.status===404)return [];
+  if(!r.ok)throw {status:r.status};
+  const j=await r.json(); return Array.isArray(j)?j:[];
+}
+async function ghDelete(path,sha,msg){
+  const r=await fetch(ghUrl(path),{method:"DELETE",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:msg,sha})});
+  if(!r.ok&&r.status!==404)throw {status:r.status};
+}
+async function pullHealth(){
+  const latest={}, old=[], today=keyOf(new Date());
+  for(const f of await ghList("health")){
+    const m=f.type==="file"&&f.name.match(HEALTH_RE); if(!m)continue;
+    const d=m[1], ts=m[2];
+    if(!latest[d]||latest[d].ts<ts){if(latest[d])old.push(latest[d].f);latest[d]={ts,f}} else old.push(f);
+  }
+  let n=0;
+  for(const d in latest){
+    const {ts,f}=latest[d], t=tsMs(ts);
+    if((cache.healthSeen[d]||0)>=t){if(Date.now()-t>14*864e5)old.push(f);continue}
+    let v={}; try{const got=await ghGet(f.path);v=(got&&got.data)||{}}catch(e){continue}
+    cache.healthSeen[d]=t;
+    const a=numOf(v.a), s=numOf(v.s);
+    if(d>today||a>10000||s>200000)continue;
+    const next={active:Math.round(a),steps:Math.round(s),src:"health",t};
+    if(newerAct(cache.activity[d],next)===next){cache.activity[d]=next;if(!cache.dirtyMonths.includes(monthOf(d)))cache.dirtyMonths.push(monthOf(d));n++}
+  }
+  for(const f of old.slice(0,15)){try{await ghDelete(f.path,f.sha,"清理健康數據")}catch(e){}}
+  saveCache();
+  return n;
 }
 async function sync(){
   if(!ghReady()||syncing){setSync();return}
@@ -594,6 +644,11 @@ async function sync(){
       if(p){cache.shas["myfoods.json"]=p.sha; cache.myfoods=cache.dirtyMy?mergeMy(cache.myfoods,(p.data&&p.data.foods)||[]):((p.data&&p.data.foods)||[])}
     }
     for(const m of new Set([monthOf(state.date),monthOf(shift(state.date,-6))])) if(!pulled.has(m)) await pullMonth(m);
+    if(!pulled.has("health")){
+      pulled.add("health");
+      const n=await pullHealth();
+      if(n)toast(`已從健康 App 同步 ${n} 天的活動消耗`);
+    }
     while(cache.dirtyMonths.length){
       const m=cache.dirtyMonths[0];
       await pushMonth(m);
@@ -648,7 +703,12 @@ function deleteMy(id){
 function markDay(k){const m=monthOf(k);if(!cache.dirtyMonths.includes(m))cache.dirtyMonths.push(m);saveCache();sync()}
 $("syncState").onclick=()=>{if(!ghReady())openSettings();else{pulled.clear();sync()}};
 window.addEventListener("online",sync);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){pulled.clear();sync()}});
+/* re-read GitHub whenever this page comes back, so an old tab never works from stale data */
+let lastPull=0;
+function refreshFromGitHub(){if(Date.now()-lastPull<5000)return;lastPull=Date.now();pulled.clear();sync()}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refreshFromGitHub()});
+window.addEventListener("focus",refreshFromGitHub);
+window.addEventListener("pageshow",e=>{if(e.persisted)refreshFromGitHub()});
 
 /* ---------- DeepSeek ---------- */
 const FORMAT=`只回覆 JSON，格式：{"items":[{"name":"滷肉飯","portion":"1 小碗 約 200g","kcal":420,"protein":13,"carbs":55,"fat":16}],"note":"一句話說明估算依據或需要注意的地方"}
@@ -827,8 +887,11 @@ function addItems(list,meal,src){
 }
 function removeItem(id){
   const k=state.date, arr=cache.days[k]||[], idx=arr.findIndex(i=>i.id===id); if(idx<0)return;
-  const it=arr[idx]; cache.days[k]=arr.filter(i=>i.id!==id); render(); markDay(k);
-  toast(`已刪除「${it.name}」`,()=>{const a=(cache.days[k]||[]).slice();a.splice(Math.min(idx,a.length),0,it);cache.days[k]=a;render();markDay(k)});
+  const it=arr[idx]; cache.days[k]=arr.filter(i=>i.id!==id); cache.del[id]={k,t:Date.now()}; render(); markDay(k);
+  toast(`已刪除「${it.name}」`,()=>{
+    /* undo: a fresh edit time makes the item win over its own deletion everywhere */
+    const back=Object.assign({},it,{mt:Date.now()}); delete cache.del[id];
+    const a=(cache.days[k]||[]).slice();a.splice(Math.min(idx,a.length),0,back);cache.days[k]=a;render();markDay(k)});
 }
 
 /* ---------- toast ---------- */
@@ -1128,7 +1191,7 @@ $("manualForm").addEventListener("submit",e=>{e.preventDefault();
   if($("mSaveMy").checked){saveMy(Object.assign({},v,{photo:v.photo!==undefined?v.photo:(old&&old.photo)||null}));toast("已存到我的食物")}
   if(editingId){
     const k=state.date, arr=(cache.days[k]||[]).slice(), i=arr.findIndex(x=>x.id===editingId);
-    if(i>=0){arr[i]=Object.assign({},arr[i],v,{meal:$("mMeal").value});cache.days[k]=arr;render();markDay(k);toast("已更新「"+v.name+"」")}
+    if(i>=0){arr[i]=Object.assign({},arr[i],v,{meal:$("mMeal").value,mt:Date.now()});cache.days[k]=arr;render();markDay(k);toast("已更新「"+v.name+"」")}
   } else addItems([v],$("mMeal").value,"manual");
   e.target.reset(); manualMode(null); clearFood(); hide();
 });

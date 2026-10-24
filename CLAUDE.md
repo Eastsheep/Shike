@@ -22,7 +22,10 @@
   - `profile.json`：`{goal:{kcal,p,c,f}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,ratio}}`
 - 本機快取在 localStorage `shike:cache`，設定（GitHub 帳號/repo/token、DeepSeek key/model）在 `shike:cfg`。token 和 key 只存在瀏覽器，絕不寫進 repo。
 - 食物 item：`{id,meal(b/l/d/s),src(photo/text/manual),name,portion,kcal,p,c,f,t, q?,u?,fn?}`；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
-- 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`），因為捷徑是在 Safari 帶入、主畫面 App 是另一份 localStorage。
+- 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`）。
+- 食物以 item 為單位合併（`mergeDays`）：本頁沒有未上傳修改時直接用遠端；有的話依 id 聯集、`mt||t` 較新者勝、刪除記在月檔 `del:{id:{k,t}}`（保留 60 天），讓舊頁面不能把刪掉的東西帶回來、也不會覆蓋別頁新增的項目。頁面回到前景／取得焦點／bfcache 還原時會重新拉資料（`refreshFromGitHub`，5 秒節流）。
+- 月檔格式：`{days, activity, del}`。
+- 健康數據新管道：捷徑直接 PUT `health/YYYY-MM-DD_yyyyMMddHHmmss.json`（內容 `{"d","a","s"}`，免 sha）。`pullHealth` 列出資料夾、每天取最新一檔套用（手動值較新則保留手動）、清掉舊檔；`healthSeen` 記錄已處理的時間。舊的 `#d=&a=&s=` 網址匯入仍保留。
 - 家人共用：同一個網址，各自在設定裡填不同的資料 repo 和 token。
 - 我的食物：資料 repo 的 `myfoods.json` = `{foods:[{id,name,kcal,p,c,f,portion,q,u,fn,photo,t}]}`，刪除留 `{id,deleted:true,t}` 墓碑，合併依 `t`（`mergeMy`）。同名存檔會覆蓋同一筆；沒有數量的（如 AI 結果）存成 1 份。從手動視窗頂端或搜尋結果帶入，照片沿用原 id 不重傳；帶入時「存到我的食物」預設不勾，避免改掉基準份量。
 - 照片：item 的 `photo` 是 id（`YYYY-MM/<uid>`），檔案在資料 repo `photos/<id>.jpg`（約 1080px、JPEG 0.75）。本機存在 IndexedDB `shike-photos`，待上傳清單在 `cache.pendingPhotos`，由 `sync()` 上傳；其他裝置用 `Accept: application/vnd.github.raw` 按需下載（失敗 60 秒內不重試）。AI 拍照估算加入時，同一張照片會掛在該次所有食物上。刪除食物不會刪 GitHub 上的照片檔。
