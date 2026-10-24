@@ -808,6 +808,16 @@ function goalFor(k){
   const [sp,sc,sf]=sum>0?[pk/sum,ck/sum,fk/sum]:[0.25,0.5,0.25];
   return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),extra,est};
 }
+/* daily energy burn for the 7-day chart: the calculator's TDEE; with
+   "依活動調整" on that TDEE is sedentary, so add the full active energy
+   (or the activity-level estimate on days without Health numbers) */
+function tdeeFor(k){
+  const c=profile().calc, dyn=profile().dyn||{}, a=cache.activity[k];
+  if(!c||!c.tdee)return 0;
+  if(!dyn.on)return c.tdee;
+  if(a&&a.active>0)return c.tdee+Math.round(a.active);
+  return k<=keyOf(new Date())?c.tdee+fallbackActive():c.tdee;
+}
 function render(){
   const k=state.date, today=keyOf(new Date()), d=parseKey(k);
   $("dateTitle").textContent=k===today?"今天":k===shift(today,-1)?"昨天":(d.getMonth()+1)+"月"+d.getDate()+"日";
@@ -878,15 +888,21 @@ function render(){
   renderWeek(); setSync();
 }
 function renderWeek(){
-  const svg=$("weekSvg"), g=profile().goal.kcal, keys=[];
+  const svg=$("weekSvg"), keys=[];
   for(let i=6;i>=0;i--) keys.push(shift(state.date,-i));
   const vals=keys.map(k=>Math.round(totals(cache.days[k]||[]).k)), goals=keys.map(k=>goalFor(k).kcal);
+  /* reference line is TDEE; fall back to the goal when the calculator was never used */
+  const tdees=keys.map(tdeeFor), hasT=tdees.every(v=>v>0), refs=hasT?tdees:goals, lbl=hasT?"TDEE":"目標";
+  const refSel=refs[6], flat=refs.every(v=>v===refs[0]), refAvg=Math.round(refs.reduce((a,b)=>a+b,0)/7);
   const logged=vals.filter(v=>v>0);
-  $("weekAvg").textContent=logged.length?`有紀錄的 ${logged.length} 天平均 ${Math.round(logged.reduce((a,b)=>a+b,0)/logged.length)} kcal，目標 ${g} kcal`:"記錄幾天後，這裡會顯示每天和目標的比較";
-  const W=340,top=14,base=118,max=Math.max(g*1.25,...vals,1),y=v=>base-(v/max)*(base-top);
+  $("weekAvg").textContent=logged.length?`有紀錄的 ${logged.length} 天平均 ${Math.round(logged.reduce((a,b)=>a+b,0)/logged.length)} kcal，${lbl} ${flat?"":"平均 "}${refAvg} kcal`:`記錄幾天後，這裡會顯示每天和 ${lbl} 的比較`;
+  const W=340,top=14,base=118,max=Math.max(Math.max(...refs)*1.15,...vals,1),y=v=>base-(v/max)*(base-top);
   const bw=28, step=(W-30)/7;
   let s=`<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
-  s+=`<line x1="0" x2="${W}" y1="${y(g)}" y2="${y(g)}" stroke="var(--muted)" stroke-dasharray="4 4"/><text x="${W}" y="${y(g)-4}" text-anchor="end" font-size="10" fill="var(--muted)">目標 ${g}</text>`;
+  /* stepped line: each day's TDEE can differ when activity is counted */
+  let dp=`M0 ${y(refs[0])}`;
+  refs.forEach((r,i)=>{const x0=i?15+i*step:0, x1=i===6?W:15+(i+1)*step; dp+=` L${x0} ${y(r)} L${x1} ${y(r)}`});
+  s+=`<path d="${dp}" fill="none" stroke="var(--muted)" stroke-dasharray="4 4"/><text x="${W}" y="${y(refSel)-4}" text-anchor="end" font-size="10" fill="var(--muted)">${lbl} ${refSel}</text>`;
   keys.forEach((k,i)=>{
     const v=vals[i], x=15+i*step+(step-bw)/2, d=parseKey(k), sel=k===state.date;
     if(v>0){s+=`<rect x="${x}" y="${y(v)}" width="${bw}" height="${base-y(v)}" rx="4" fill="${v>goals[i]?"var(--warn)":"var(--accent)"}" opacity="${sel?1:.55}"/>`;
