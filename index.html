@@ -72,6 +72,17 @@ button{cursor:pointer}
 .kcalline{font-size:13px;color:var(--muted)}
 .kcalline b{color:var(--ink);font-weight:600}
 .kcalline .plus{color:var(--accent)}
+.fold summary{cursor:pointer;font-size:12px;color:var(--accent);list-style:none;display:inline-flex;align-items:center;gap:4px;padding:2px 0}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .15s}
+.fold[open] summary::after{transform:rotate(-135deg) translateY(-1px)}
+#goalBreakWrap .breakdown{margin-top:6px}
+.breakdown{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 12px}
+.brow{display:grid;grid-template-columns:1fr auto;gap:0 8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}
+.brow:last-of-type{border-bottom:0}
+.brow b{font-weight:600;text-align:right}
+.brow small{grid-column:1/-1;font-size:12px;color:var(--muted)}
+.breakdown .hint{padding:6px 0}
 .activity{width:100%;display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;text-align:left;background:var(--accent-soft);border:0;border-radius:14px;padding:10px 14px;margin-bottom:4px}
 .activity svg{width:22px;height:22px;grid-row:span 2;color:var(--accent)}
 .activity .a-main{display:flex;justify-content:space-between;gap:8px;font-size:14px}
@@ -316,6 +327,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 
 <div class="sheet" id="sheetGoal" hidden role="dialog" aria-label="目標設定"><div class="wrap">
   <div class="sh"><h3>每日目標</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <details class="fold" id="goalBreakWrap" hidden><summary>查看計算過程</summary><div class="breakdown" id="goalBreak"></div></details>
   <div class="grid4">
     <div class="field"><label for="gK">熱量 kcal</label><input id="gK" type="number" min="800"></div>
     <div class="field"><label for="gP">蛋白質 g</label><input id="gP" type="number" min="0"></div>
@@ -337,7 +349,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
       <option value="-500">減脂（每日 −500）</option><option value="-300" selected>溫和減脂（−300）</option>
       <option value="0">維持</option><option value="250">增肌（+250）</option></select></div>
   </div>
-  <button class="btn" id="calcGo">算出建議值</button>
+  <button class="btn" id="calcGo">算出並套用建議值</button>
   <div class="hint" id="calcOut"></div>
   <h4>依活動調整</h4>
   <label class="check" for="gDyn"><input type="checkbox" id="gDyn">把健康 App 的「活動消耗」加到當天的熱量目標</label>
@@ -572,13 +584,21 @@ function macroLine(el,portion,p,c,f){
 function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i.p||0),c:a.c+(+i.c||0),f:a.f+(+i.f||0)}),{k:0,p:0,c:0,f:0})}
 /* base goal plus the counted share of that day's active energy, split across
    protein / carbs / fat in the same calorie proportions as the base goal */
+function avgActive(k){
+  const v=[];
+  for(let i=1;i<=7;i++){const a=cache.activity[shift(k,-i)];if(a&&a.active>0)v.push(a.active)}
+  return v.length?Math.round(v.reduce((x,y)=>x+y,0)/v.length):0;
+}
+/* today, before the Health numbers arrive, the last 7 logged days' average stands in (marked est) */
 function goalFor(k){
   const g=profile().goal, dyn=profile().dyn||{}, a=cache.activity[k];
-  const extra=dyn.on&&a&&a.active>0?Math.round(a.active*(dyn.ratio||0.75)):0;
-  if(!extra)return {kcal:g.kcal,p:g.p,c:g.c,f:g.f,extra:0};
+  let active=a&&a.active>0?a.active:0, est=false;
+  if(dyn.on&&!active&&k===keyOf(new Date())){active=avgActive(k);est=active>0}
+  const extra=dyn.on&&active?Math.round(active*(dyn.ratio||0.75)):0;
+  if(!extra)return {kcal:g.kcal,p:g.p,c:g.c,f:g.f,extra:0,est:false,active:0};
   const pk=g.p*4, ck=g.c*4, fk=g.f*9, sum=pk+ck+fk;
   const [sp,sc,sf]=sum>0?[pk/sum,ck/sum,fk/sum]:[0.25,0.5,0.25];
-  return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),extra};
+  return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),extra,est,active};
 }
 function render(){
   const k=state.date, today=keyOf(new Date()), d=parseKey(k);
@@ -587,9 +607,9 @@ function render(){
   $("todayBtn").hidden=k===today; $("nextDay").disabled=k>=today;
   $("setupBanner").hidden=ghReady()&&!!cfg.dsKey;
   const items=cache.days[k]||[], t=totals(items), g=goalFor(k), act=cache.activity[k], dyn=profile().dyn||{};
-  $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}）`:"";
-  $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":"—";
-  $("actSub").textContent=act?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
+  $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}${g.est?"，預估":""}）`:"";
+  $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":g.est?"約 "+g.active+" kcal":"—";
+  $("actSub").textContent=g.est?`今天還沒帶入，先用近 7 天平均 ${g.active} kcal 預估 · 點此輸入或執行捷徑`:act?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
       dyn.on?`目標計入 ${Math.round((dyn.ratio||0.75)*100)}%`:"未計入目標（可在「目標」開啟）"].filter(Boolean).join(" · ")
     :"點此輸入，或用捷徑從健康 App 帶入";
   const left=Math.round(g.kcal-t.k), over=left<0;
@@ -907,7 +927,32 @@ $("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{};
   $("gK").value=g.kcal;$("gP").value=g.p;$("gC").value=g.c;$("gF").value=g.f;
   if(b.sex)$("bSex").value=b.sex; $("bAge").value=b.age||""; $("bH").value=b.h||""; $("bW").value=b.w||""; $("bBf").value=b.bf||""; showLbm();
   if(b.act)$("bAct").value=b.act; if(b.goal!=null)$("bGoal").value=b.goal; $("calcOut").textContent="";
-  const dyn=profile().dyn||{}; $("gDyn").checked=!!dyn.on; $("gRatio").value=String(dyn.ratio||0.75); show("sheetGoal")};
+  const dyn=profile().dyn||{}; $("gDyn").checked=!!dyn.on; $("gRatio").value=String(dyn.ratio||0.75); renderBreak(); show("sheetGoal")};
+let lastCalc=null;
+const ACT_NAME={1.2:"久坐",1.375:"輕度活動",1.55:"中度活動",1.725:"高度活動"};
+function renderBreak(){
+  const c=profile().calc, g=profile().goal, dyn=profile().dyn||{}, el=$("goalBreak");
+  if(!c){$("goalBreakWrap").hidden=true;return}
+  const rows=[
+    ["基礎代謝 BMR",`${c.bmr} kcal`,c.formula+(c.lbm?`，去脂體重 ${c.lbm} kg`:"")],
+    ["× 活動係數",`${c.factor}`,ACT_NAME[c.factor]||""],
+    ["＝ 每日消耗 TDEE",`${c.tdee} kcal`,""],
+    [c.adj<0?"− 減脂赤字":c.adj>0?"＋ 增肌盈餘":"± 維持",`${c.adj<0?"−":c.adj>0?"+":""}${Math.abs(c.adj)} kcal`,""],
+    ["＝ 每日基礎目標",`${c.kcal} kcal`,c.kcal-(c.tdee+c.adj)>10?"已調整到最低建議攝取量":"取整到 10 kcal"]
+  ];
+  if(dyn.on) rows.push(["＋ 當天活動消耗",`× ${Math.round((dyn.ratio||0.75)*100)}%`,"依健康 App 每天另外加上；還沒帶入時用近 7 天平均預估"]);
+  el.textContent="";
+  for(const [a,b,n] of rows){
+    const r=document.createElement("div");r.className="brow";
+    const l=document.createElement("span");l.textContent=a;
+    const v=document.createElement("b");v.className="num";v.textContent=b;
+    r.append(l,v);
+    if(n){const s=document.createElement("small");s.textContent=n;r.append(s)}
+    el.append(r);
+  }
+  if(c.kcal!==g.kcal){const m=document.createElement("div");m.className="hint";m.textContent=`目前目標已手動改成 ${g.kcal} kcal。`;el.append(m)}
+  $("goalBreakWrap").hidden=false;
+}
 function showLbm(){const w=+$("bW").value,bf=+$("bBf").value;$("bLbm").value=w&&bf>=3&&bf<=60?r1(w*(1-bf/100))+" kg":""}
 $("bW").addEventListener("input",showLbm); $("bBf").addEventListener("input",showLbm);
 $("calcGo").onclick=()=>{
@@ -922,14 +967,21 @@ $("calcGo").onclick=()=>{
   const f=Math.round(kcal*0.27/9), c=Math.max(0,Math.round((kcal-p*4-f*9)/4));
   $("gK").value=kcal;$("gP").value=p;$("gC").value=c;$("gF").value=f;
   $("calcOut").textContent=(lbm?`依體脂率計算：去脂體重約 ${r1(lbm)} kg，`:"")+`基礎代謝約 ${Math.round(bmr)} kcal，${dynOn?"久坐時":""}每日消耗約 ${tdee} kcal。`
-    +(lbm?`蛋白質依去脂體重每公斤 ${adj<0?2.2:2.0} g 計算。`:"")+`已填入建議值${dynOn?"，活動消耗會每天另外加上去":""}，確認後按「儲存目標」。`;
+    +(lbm?`蛋白質依去脂體重每公斤 ${adj<0?2.2:2.0} g 計算。`:"")+`已套用為每日目標 ${kcal} kcal${dynOn?"，活動消耗會每天另外加上去":""}。`;
+  lastCalc={bmr:Math.round(bmr),tdee,factor:act,adj,kcal,formula:lbm?"Katch-McArdle（去脂體重）":"Mifflin-St Jeor",lbm:lbm?r1(lbm):null};
+  saveGoal(); renderBreak(); toast(`已套用：每日 ${kcal} kcal`);
+  $("gK").scrollIntoView({block:"center",behavior:"smooth"});
 };
-$("goalSave").onclick=()=>{
-  cache.profile={goal:{kcal:Math.max(800,+$("gK").value||1800),p:+$("gP").value||0,c:+$("gC").value||0,f:+$("gF").value||0},
+function saveGoal(){
+  const goal={kcal:Math.max(800,+$("gK").value||1800),p:+$("gP").value||0,c:+$("gC").value||0,f:+$("gF").value||0};
+  /* keep the last calculation; the breakdown notes when the goal was changed by hand afterwards */
+  const calc=lastCalc||profile().calc||null;
+  cache.profile={goal,calc,
     body:{sex:$("bSex").value,age:+$("bAge").value||null,h:+$("bH").value||null,w:+$("bW").value||null,bf:+$("bBf").value||null,act:$("bAct").value,goal:$("bGoal").value},
     dyn:{on:$("gDyn").checked,ratio:+$("gRatio").value||0.75}};
-  cache.dirtyProfile=true; saveCache(); render(); hide(); toast("目標已更新"); sync();
-};
+  cache.dirtyProfile=true; saveCache(); render(); sync();
+}
+$("goalSave").onclick=()=>{saveGoal();hide();toast("目標已更新")};
 
 /* settings */
 function openSettings(){
