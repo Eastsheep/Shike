@@ -609,6 +609,18 @@ async function ghDelete(path,sha,msg){
   const r=await fetch(ghUrl(path),{method:"DELETE",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:msg,sha})});
   if(!r.ok&&r.status!==404)throw {status:r.status};
 }
+async function ghGetText(path){
+  const r=await fetch(ghUrl(path)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
+  if(!r.ok)throw {status:r.status};
+  return b64dec((await r.json()).content||"");
+}
+/* the iPhone keyboard may turn " into “ ” when the shortcut text is typed; read it either way */
+function parseHealthText(t){
+  t=String(t).replace(/^﻿/,"").replace(/[“”„‟″＂]/g,'"');
+  try{return JSON.parse(t)}catch(e){}
+  const pick=k=>{const m=t.match(new RegExp('"'+k+'"\\s*:\\s*(?:"([^"]*)"|([^,}]*))'));return m?(m[1]!==undefined?m[1]:m[2]):""};
+  return {d:pick("d"),a:pick("a"),s:pick("s")};
+}
 async function pullHealth(){
   const latest={}, old=[], today=keyOf(new Date());
   for(const f of await ghList("health")){
@@ -620,7 +632,7 @@ async function pullHealth(){
   for(const d in latest){
     const {ts,f}=latest[d], t=tsMs(ts);
     if((cache.healthSeen[d]||0)>=t){if(Date.now()-t>14*864e5)old.push(f);continue}
-    let v={}; try{const got=await ghGet(f.path);v=(got&&got.data)||{}}catch(e){continue}
+    let v={}; try{v=parseHealthText(await ghGetText(f.path))}catch(e){continue}
     cache.healthSeen[d]=t;
     const a=numOf(v.a), s=numOf(v.s);
     if(d>today||a>10000||s>200000)continue;
