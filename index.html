@@ -71,11 +71,34 @@ button{cursor:pointer}
 .bar i{display:block;height:100%;border-radius:4px;transition:width .4s}
 .kcalline{font-size:13px;color:var(--muted)}
 .kcalline b{color:var(--ink);font-weight:600}
+.kcalline .plus{color:var(--accent)}
+.activity{width:100%;display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;text-align:left;background:var(--accent-soft);border:0;border-radius:14px;padding:10px 14px;margin-bottom:4px}
+.activity svg{width:22px;height:22px;grid-row:span 2;color:var(--accent)}
+.activity .a-main{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.activity .a-main b{font-weight:500}
+.activity .a-sub{font-size:12px;color:var(--muted)}
+.check{display:flex;gap:10px;align-items:center;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--accent);flex:none}
+a.btn{color:inherit;text-decoration:none}
 
 section.meal{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-block:12px;overflow:hidden}
-.meal header{display:flex;align-items:baseline;gap:8px;padding:12px 14px 8px}
-.meal header h2{font-size:16px;margin:0;font-weight:700}
-.meal header .tot{margin-left:auto;color:var(--muted);font-size:13px}
+.meal .mhead{display:flex;align-items:baseline;gap:8px;padding:12px 14px 8px;width:100%;border:0;background:none;text-align:left}
+.meal .mhead .mt{font-size:16px;font-weight:700}
+.meal .mhead .tot{margin-left:auto;color:var(--muted);font-size:13px}
+.meal .mhead .addin{font-size:13px;color:var(--accent);font-weight:500;white-space:nowrap}
+.meal .mhead:hover .addin{text-decoration:underline}
+.meal li.it{cursor:pointer}
+.meal li.it:hover{background:var(--accent-soft)}
+.meal .empty{cursor:pointer}
+.pick{display:grid;gap:8px}
+.pick .btn{justify-content:flex-start}
+.voicewrap{position:relative}
+.voicewrap textarea{padding-right:56px}
+.mic{position:absolute;right:8px;bottom:8px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.mic svg{width:20px;height:20px}
+.mic.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px var(--accent-soft)}}
+@media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
 .meal ul{list-style:none;margin:0;padding:0}
 .meal li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid var(--line)}
 .meal li .nm{min-width:0}
@@ -179,12 +202,18 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
       <div class="c"><span class="lbl" id="ringLbl">還可以吃</span><span class="big" id="ringNum">0</span><span class="lbl">kcal</span></div>
     </div>
     <div class="macros">
-      <div class="kcalline">已吃 <b class="num" id="eaten">0</b> / <span class="num" id="goalK">0</span> kcal</div>
+      <div class="kcalline">已吃 <b class="num" id="eaten">0</b> / <span class="num" id="goalK">0</span> kcal<span class="plus num" id="goalPlus"></span></div>
       <div class="mrow"><div class="h"><b>蛋白質</b><span class="num" id="pTxt"></span></div><div class="bar"><i id="pBar" style="background:var(--pro)"></i></div></div>
       <div class="mrow"><div class="h"><b>碳水</b><span class="num" id="cTxt"></span></div><div class="bar"><i id="cBar" style="background:var(--carb)"></i></div></div>
       <div class="mrow"><div class="h"><b>脂肪</b><span class="num" id="fTxt"></span></div><div class="bar"><i id="fBar" style="background:var(--fat)"></i></div></div>
     </div>
   </div>
+
+  <button class="activity" id="activityRow" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="13" cy="4.5" r="1.8"/><path d="M9 21l2.5-6 3 3V21M7 12l3-4 3 2 2 3h3M11.5 15l-1-4"/></svg>
+    <span class="a-main"><b>活動消耗</b><span class="num" id="actKcal">—</span></span>
+    <span class="a-sub" id="actSub">點此輸入，或用捷徑從健康 App 帶入</span>
+  </button>
 
   <div class="banner" id="welcome" hidden>
     <div><b>這一天還沒有紀錄。</b>用下方的「拍照估算」拍下餐點，AI 會列出食物和熱量讓你確認；也可以用文字描述，或從常吃清單手動加入。</div>
@@ -222,18 +251,35 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 
 <div class="sheet" id="sheetText" hidden role="dialog" aria-label="文字描述"><div class="wrap">
   <div class="sh"><h3>用文字描述</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
-  <div class="field"><label for="textIn">吃了什麼</label><textarea id="textIn" rows="3" placeholder="例如：一碗滷肉飯加滷蛋、燙青菜、一杯微糖珍奶 L"></textarea></div>
+  <div class="field"><label for="textIn">吃了什麼</label>
+    <div class="voicewrap"><textarea id="textIn" rows="3" placeholder="例如：一碗滷肉飯加滷蛋、燙青菜、一杯微糖珍奶 L"></textarea>
+      <button class="mic" id="micBtn" type="button" aria-label="語音輸入"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    </div>
+  </div>
+  <div class="hint" id="micHint">點麥克風用說的，說完會自動停止。</div>
   <button class="btn primary" id="textGo">估算熱量</button>
   <div class="status" id="textStatus" hidden></div>
   <div id="textResult"></div>
 </div></div>
 
+<div class="sheet" id="sheetAddTo" hidden role="dialog" aria-label="新增食物"><div class="wrap">
+  <div class="sh"><h3 id="addToTitle">新增到早餐</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div class="pick">
+    <button class="btn primary" id="toPhoto" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>拍照估算</button>
+    <button class="btn" id="toText" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/></svg>文字或語音描述</button>
+    <button class="btn" id="toManual" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>手動輸入／常吃清單</button>
+  </div>
+</div></div>
+
 <div class="sheet" id="sheetManual" hidden role="dialog" aria-label="手動紀錄"><div class="wrap">
-  <div class="sh"><h3>手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
-  <div id="recentWrap" hidden><div class="hint" style="margin-bottom:6px">最近吃過</div><div class="chips" id="recentChips"></div></div>
-  <div><div class="hint" style="margin-bottom:6px">常見食物（參考值）</div><div class="chips" id="commonChips"></div></div>
+  <div class="sh"><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div id="manualChips" style="display:grid;gap:12px">
+    <div id="recentWrap" hidden><div class="hint" style="margin-bottom:6px">最近吃過</div><div class="chips" id="recentChips"></div></div>
+    <div><div class="hint" style="margin-bottom:6px">常見食物（參考值）</div><div class="chips" id="commonChips"></div></div>
+  </div>
   <form id="manualForm" style="display:grid;gap:10px">
     <div class="field"><label for="mName">食物名稱</label><input id="mName" required placeholder="例如：雞胸肉便當"></div>
+    <div class="field"><label for="mPortion">份量（選填）</label><input id="mPortion" placeholder="例如：1 碗、約 200g"></div>
     <div class="grid4">
       <div class="field"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
       <div class="field"><label for="mP">蛋白質 g</label><input id="mP" type="number" inputmode="decimal" min="0" step="0.1"></div>
@@ -242,8 +288,9 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
     </div>
     <div class="actions">
       <div class="field"><label for="mMeal">餐別</label><select id="mMeal"></select></div>
-      <button class="btn primary" type="submit">加入紀錄</button>
+      <button class="btn primary" type="submit" id="mSubmit">加入紀錄</button>
     </div>
+    <button class="btn" type="button" id="mDelete" hidden style="color:var(--warn)">刪除這項</button>
   </form>
 </div></div>
 
@@ -270,7 +317,26 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   </div>
   <button class="btn" id="calcGo">算出建議值</button>
   <div class="hint" id="calcOut"></div>
+  <h4>依活動調整</h4>
+  <label class="check" for="gDyn"><input type="checkbox" id="gDyn">把健康 App 的「活動消耗」加到當天的熱量目標</label>
+  <div class="grid2">
+    <div class="field"><label for="gRatio">計入比例</label><select id="gRatio"><option value="0.5">50%（保守）</option><option value="0.75" selected>75%</option><option value="1">100%</option></select></div>
+  </div>
+  <div class="hint">開啟後，上面的熱量目標代表「沒有額外活動」的基礎目標，用計算機時會自動以「久坐」計算。手錶和手機估的活動消耗常偏高，建議計入 75% 或 50%。多出來的熱量會加到碳水目標。</div>
   <button class="btn primary" id="goalSave">儲存目標</button>
+</div></div>
+
+<div class="sheet" id="sheetAct" hidden role="dialog" aria-label="活動消耗"><div class="wrap">
+  <div class="sh"><h3>活動消耗</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div class="hint" id="actDate"></div>
+  <div class="grid2">
+    <div class="field"><label for="aK">活動消耗 kcal</label><input id="aK" type="number" inputmode="decimal" min="0"></div>
+    <div class="field"><label for="aSteps">步數</label><input id="aSteps" type="number" inputmode="numeric" min="0"></div>
+  </div>
+  <div class="hint">在健康 App 的「瀏覽 → 活動 → 活動能量」可以看到當天數字。</div>
+  <button class="btn primary" id="actSave" type="button">儲存</button>
+  <div class="note">想自動帶入？在「捷徑」App 建立一個名為「食刻健康」的捷徑（步驟見 README），之後按下面的按鈕就會讀取健康 App 並帶回來。</div>
+  <a class="btn" id="runShortcut" href="shortcuts://run-shortcut?name=%E9%A3%9F%E5%88%BB%E5%81%A5%E5%BA%B7">執行「食刻健康」捷徑</a>
 </div></div>
 
 <div class="sheet" id="sheetSettings" hidden role="dialog" aria-label="連線設定"><div class="wrap">
@@ -322,7 +388,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 /* ---------- config + local cache ---------- */
 const CFG="shike:cfg", CACHE="shike:cache";
 let cfg=Object.assign({owner:"",repo:"shike-data",token:"",dsKey:"",dsModel:"deepseek-flash"},lsGet(CFG,{}));
-const cache=Object.assign({days:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false},lsGet(CACHE,{}));
+const cache=Object.assign({days:{},activity:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false},lsGet(CACHE,{}));
 const state={date:keyOf(new Date())};
 const defaultProfile={goal:{kcal:1800,p:110,c:200,f:60},body:{}};
 const profile=()=>cache.profile||defaultProfile;
@@ -350,6 +416,7 @@ async function ghPut(path,data,sha,msg){
 }
 const monthPath=m=>`data/${m}.json`;
 function monthDays(m){const o={};for(const k in cache.days)if(monthOf(k)===m&&cache.days[k].length)o[k]=cache.days[k];return o}
+function monthAct(m){const o={};for(const k in cache.activity)if(monthOf(k)===m)o[k]=cache.activity[k];return o}
 
 /* ---------- sync ---------- */
 let syncing=false, syncErr=null, pulled=new Set();
@@ -370,20 +437,23 @@ async function pullMonth(m){
   pulled.add(m);
   if(!got){return}
   cache.shas[monthPath(m)]=got.sha;
-  const remote=(got.data&&got.data.days)||{};
   const dirty=cache.dirtyMonths.includes(m);
-  for(const k in remote){ if(!(dirty&&cache.days[k])) cache.days[k]=remote[k] }
-  if(!dirty) for(const k in cache.days) if(monthOf(k)===m&&!remote[k]) delete cache.days[k];
+  for(const field of ["days","activity"]){
+    const remote=(got.data&&got.data[field])||{}, local=cache[field];
+    for(const k in remote){ if(!(dirty&&local[k])) local[k]=remote[k] }
+    if(!dirty) for(const k in local) if(monthOf(k)===m&&!remote[k]) delete local[k];
+  }
 }
 async function pushMonth(m){
   const path=monthPath(m);
-  try{ cache.shas[path]=await ghPut(path,{days:monthDays(m)},cache.shas[path],"紀錄 "+m) }
+  try{ cache.shas[path]=await ghPut(path,{days:monthDays(m),activity:monthAct(m)},cache.shas[path],"紀錄 "+m) }
   catch(e){
     if(e&&(e.status===409||e.status===422)){
-      const got=await ghGet(path);
-      const merged=Object.assign({},(got&&got.data&&got.data.days)||{},monthDays(m));
-      for(const k in merged) if(!cache.days[k]) cache.days[k]=merged[k];
-      cache.shas[path]=await ghPut(path,{days:merged},got&&got.sha,"紀錄 "+m);
+      const got=await ghGet(path), rd=(got&&got.data)||{};
+      const days=Object.assign({},rd.days||{},monthDays(m)), act=Object.assign({},rd.activity||{},monthAct(m));
+      for(const k in days) if(!cache.days[k]) cache.days[k]=days[k];
+      for(const k in act) if(!cache.activity[k]) cache.activity[k]=act[k];
+      cache.shas[path]=await ghPut(path,{days,activity:act},got&&got.sha,"紀錄 "+m);
     } else throw e;
   }
 }
@@ -468,13 +538,24 @@ async function shrinkToDataUrl(file){
 
 /* ---------- render ---------- */
 function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i.p||0),c:a.c+(+i.c||0),f:a.f+(+i.f||0)}),{k:0,p:0,c:0,f:0})}
+/* base goal plus the counted share of that day's active energy; the extra goes to carbs */
+function goalFor(k){
+  const g=profile().goal, dyn=profile().dyn||{}, a=cache.activity[k];
+  const extra=dyn.on&&a&&a.active>0?Math.round(a.active*(dyn.ratio||0.75)):0;
+  return {kcal:g.kcal+extra,p:g.p,c:g.c+Math.round(extra/4),f:g.f,extra};
+}
 function render(){
   const k=state.date, today=keyOf(new Date()), d=parseKey(k);
   $("dateTitle").textContent=k===today?"今天":k===shift(today,-1)?"昨天":(d.getMonth()+1)+"月"+d.getDate()+"日";
   $("dateWd").textContent=(k===today||k===shift(today,-1)?(d.getMonth()+1)+"/"+d.getDate()+" ":"")+"週"+WD[d.getDay()];
   $("todayBtn").hidden=k===today; $("nextDay").disabled=k>=today;
   $("setupBanner").hidden=ghReady()&&!!cfg.dsKey;
-  const items=cache.days[k]||[], t=totals(items), g=profile().goal;
+  const items=cache.days[k]||[], t=totals(items), g=goalFor(k), act=cache.activity[k], dyn=profile().dyn||{};
+  $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}）`:"";
+  $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":"—";
+  $("actSub").textContent=act?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
+      dyn.on?`目標計入 ${Math.round((dyn.ratio||0.75)*100)}%`:"未計入目標（可在「目標」開啟）"].filter(Boolean).join(" · ")
+    :"點此輸入，或用捷徑從健康 App 帶入";
   const left=Math.round(g.kcal-t.k), over=left<0;
   $("ring").classList.toggle("over",over);
   $("ringLbl").textContent=over?"超出":"還可以吃";
@@ -491,16 +572,21 @@ function render(){
   for(const [mk,ml] of MEALS){
     const list=items.filter(i=>i.meal===mk);
     const sec=document.createElement("section"); sec.className="meal";
-    const h=document.createElement("header");
-    h.innerHTML=`<h2></h2><span class="tot num"></span>`;
-    h.querySelector("h2").textContent=ml;
+    const h=document.createElement("button");
+    h.type="button"; h.className="mhead"; h.setAttribute("aria-label","新增到"+ml);
+    h.innerHTML=`<span class="mt"></span><span class="tot num"></span><span class="addin">＋ 新增</span>`;
+    h.querySelector(".mt").textContent=ml;
     h.querySelector(".tot").textContent=list.length?Math.round(totals(list).k)+" kcal":"";
+    h.onclick=()=>openAddTo(mk);
     sec.append(h);
-    if(!list.length){const e=document.createElement("div");e.className="empty";e.textContent="尚未記錄";sec.append(e)}
+    if(!list.length){const e=document.createElement("div");e.className="empty";e.textContent="尚未記錄";e.onclick=()=>openAddTo(mk);sec.append(e)}
     else{
       const ul=document.createElement("ul");
       for(const it of list){
         const li=document.createElement("li");
+        li.className="it"; li.tabIndex=0; li.setAttribute("role","button");
+        li.onclick=e=>{if(!e.target.closest(".del"))openEdit(it.id)};
+        li.onkeydown=e=>{if(e.key==="Enter"&&e.target===li)openEdit(it.id)};
         li.innerHTML=`<div class="nm"><div></div><div class="sub num"></div></div><span class="num"></span><button class="del" aria-label="刪除">×</button>`;
         const nm=li.querySelector(".nm div");
         nm.textContent=it.name;
@@ -519,7 +605,7 @@ function render(){
 function renderWeek(){
   const svg=$("weekSvg"), g=profile().goal.kcal, keys=[];
   for(let i=6;i>=0;i--) keys.push(shift(state.date,-i));
-  const vals=keys.map(k=>Math.round(totals(cache.days[k]||[]).k));
+  const vals=keys.map(k=>Math.round(totals(cache.days[k]||[]).k)), goals=keys.map(k=>goalFor(k).kcal);
   const logged=vals.filter(v=>v>0);
   $("weekAvg").textContent=logged.length?`有紀錄的 ${logged.length} 天平均 ${Math.round(logged.reduce((a,b)=>a+b,0)/logged.length)} kcal，目標 ${g} kcal`:"記錄幾天後，這裡會顯示每天和目標的比較";
   const W=340,top=14,base=118,max=Math.max(g*1.25,...vals,1),y=v=>base-(v/max)*(base-top);
@@ -528,7 +614,7 @@ function renderWeek(){
   s+=`<line x1="0" x2="${W}" y1="${y(g)}" y2="${y(g)}" stroke="var(--muted)" stroke-dasharray="4 4"/><text x="${W}" y="${y(g)-4}" text-anchor="end" font-size="10" fill="var(--muted)">目標 ${g}</text>`;
   keys.forEach((k,i)=>{
     const v=vals[i], x=15+i*step+(step-bw)/2, d=parseKey(k), sel=k===state.date;
-    if(v>0){s+=`<rect x="${x}" y="${y(v)}" width="${bw}" height="${base-y(v)}" rx="4" fill="${v>g?"var(--warn)":"var(--accent)"}" opacity="${sel?1:.55}"/>`;
+    if(v>0){s+=`<rect x="${x}" y="${y(v)}" width="${bw}" height="${base-y(v)}" rx="4" fill="${v>goals[i]?"var(--warn)":"var(--accent)"}" opacity="${sel?1:.55}"/>`;
       if(sel) s+=`<text x="${x+bw/2}" y="${y(v)-4}" text-anchor="middle" font-size="10" fill="var(--ink)" font-family="IBM Plex Mono,monospace">${v}</text>`;}
     s+=`<text x="${x+bw/2}" y="${base+16}" text-anchor="middle" font-size="11" fill="${sel?"var(--ink)":"var(--muted)"}" font-weight="${sel?700:400}">${WD[d.getDay()]}</text>`;
     s+=`<text x="${x+bw/2}" y="${base+29}" text-anchor="middle" font-size="9" fill="var(--muted)">${d.getMonth()+1}/${d.getDate()}</text>`;
@@ -564,7 +650,10 @@ function hide(){if(!openSheet)return;openSheet.hidden=true;$("scrim").hidden=tru
 $("scrim").onclick=hide;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=hide);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
-function mealSelect(sel){sel.innerHTML=MEALS.map(([k,l])=>`<option value="${k}">${l}</option>`).join("");sel.value=defaultMeal()}
+let pendingMeal=null;   /* set when adding from a meal's row; the bottom bar clears it */
+function mealSelect(sel){sel.innerHTML=MEALS.map(([k,l])=>`<option value="${k}">${l}</option>`).join("");sel.value=pendingMeal||defaultMeal()}
+document.querySelector(".addbar").addEventListener("click",()=>{pendingMeal=null},true);
+function openAddTo(mk){pendingMeal=mk;$("addToTitle").textContent="新增到"+MEALS.find(m=>m[0]===mk)[1];show("sheetAddTo")}
 function setStatus(el,txt,kind){el.hidden=!txt;el.className="status"+(kind==="err"?" err":kind==="ok"?" ok":"");el.innerHTML=kind==="busy"?'<span class="spin"></span>':"";el.append(txt||"")}
 
 function showCands(target,res,src){
@@ -641,9 +730,27 @@ $("textGo").onclick=async()=>{
 };
 
 /* manual */
-function fill(n,k,p,c,f){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f}
+function fill(n,k,p,c,f,portion){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mPortion").value=portion||""}
 function chip(label,k,onclick){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;const s=document.createElement("span");s.textContent=k;b.append(s);b.onclick=onclick;return b}
+let editingId=null;
+function manualMode(edit){
+  editingId=edit||null;
+  $("manualTitle").textContent=edit?"編輯食物":"手動紀錄";
+  $("manualChips").hidden=!!edit; $("mDelete").hidden=!edit;
+  $("mSubmit").textContent=edit?"儲存修改":"加入紀錄";
+}
+function openEdit(id){
+  const it=(cache.days[state.date]||[]).find(i=>i.id===id); if(!it)return;
+  $("manualForm").reset(); manualMode(id); mealSelect($("mMeal")); $("mMeal").value=it.meal;
+  fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f),it.portion);
+  show("sheetManual");
+}
+$("mDelete").onclick=()=>{const id=editingId;hide();manualMode(null);removeItem(id)};
+$("toPhoto").onclick=()=>$("addPhoto").onclick();
+$("toText").onclick=()=>$("addText").onclick();
+$("toManual").onclick=()=>$("addManual").onclick();
 $("addManual").onclick=()=>{
+  $("manualForm").reset(); manualMode(null);
   mealSelect($("mMeal"));
   const cc=$("commonChips"); if(!cc.children.length) COMMON.forEach(([n,k,p,c,f])=>cc.append(chip(n,k,()=>fill(n,k,p,c,f))));
   const seen=new Map();
@@ -653,27 +760,50 @@ $("addManual").onclick=()=>{
   show("sheetManual");
 };
 $("manualForm").addEventListener("submit",e=>{e.preventDefault();
-  addItems([{name:$("mName").value.trim(),kcal:$("mK").value,p:$("mP").value,c:$("mC").value,f:$("mF").value}],$("mMeal").value,"manual");
-  e.target.reset(); hide();
+  const v={name:$("mName").value.trim(),portion:$("mPortion").value.trim(),kcal:Math.round(+$("mK").value||0),p:r1($("mP").value),c:r1($("mC").value),f:r1($("mF").value)};
+  if(editingId){
+    const k=state.date, arr=(cache.days[k]||[]).slice(), i=arr.findIndex(x=>x.id===editingId);
+    if(i>=0){arr[i]=Object.assign({},arr[i],v,{meal:$("mMeal").value});cache.days[k]=arr;render();markDay(k);toast("已更新「"+v.name+"」")}
+  } else addItems([v],$("mMeal").value,"manual");
+  e.target.reset(); manualMode(null); hide();
 });
+
+/* voice input for the description box; falls back to the keyboard's dictation key */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;
+if(!SR){$("micBtn").hidden=true;$("micHint").textContent="也可以點鍵盤上的麥克風，用說的輸入。"}
+$("micBtn").onclick=()=>{
+  if(rec){rec.stop();return}
+  const box=$("textIn"), base=box.value.trim()?box.value.trim()+"、":"";
+  try{rec=new SR()}catch(e){$("micHint").textContent="這個瀏覽器不支援語音輸入，請改用鍵盤上的麥克風。";return}
+  rec.lang="zh-TW"; rec.interimResults=true; rec.continuous=false;
+  rec.onresult=e=>{let t="";for(const r of e.results)t+=r[0].transcript;box.value=base+t};
+  rec.onerror=e=>{$("micHint").textContent=(e.error==="not-allowed"||e.error==="service-not-allowed")?"沒有麥克風權限。請到 iPhone 設定允許 Safari 使用麥克風，或改用鍵盤上的麥克風。":e.error==="no-speech"?"沒聽到聲音，請再按一次麥克風。":"語音辨識失敗，請再試一次，或改用鍵盤上的麥克風。"};
+  rec.onend=()=>{rec=null;$("micBtn").classList.remove("on");if($("micHint").textContent.startsWith("聆聽"))$("micHint").textContent=box.value.trim()?"聽完了，確認文字後按「估算熱量」。":"點麥克風用說的，說完會自動停止。"};
+  try{rec.start();$("micBtn").classList.add("on");$("micHint").textContent="聆聽中…說完會自動停止，再按一次可以提早結束。"}
+  catch(e){rec=null;$("micHint").textContent="無法啟動語音輸入，請改用鍵盤上的麥克風。"}
+};
 
 /* goal */
 $("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{};
   $("gK").value=g.kcal;$("gP").value=g.p;$("gC").value=g.c;$("gF").value=g.f;
   if(b.sex)$("bSex").value=b.sex; $("bAge").value=b.age||""; $("bH").value=b.h||""; $("bW").value=b.w||"";
-  if(b.act)$("bAct").value=b.act; if(b.goal!=null)$("bGoal").value=b.goal; $("calcOut").textContent=""; show("sheetGoal")};
+  if(b.act)$("bAct").value=b.act; if(b.goal!=null)$("bGoal").value=b.goal; $("calcOut").textContent="";
+  const dyn=profile().dyn||{}; $("gDyn").checked=!!dyn.on; $("gRatio").value=String(dyn.ratio||0.75); show("sheetGoal")};
 $("calcGo").onclick=()=>{
-  const sex=$("bSex").value,a=+$("bAge").value,h=+$("bH").value,w=+$("bW").value,act=+$("bAct").value,adj=+$("bGoal").value;
+  const dynOn=$("gDyn").checked;
+  const sex=$("bSex").value,a=+$("bAge").value,h=+$("bH").value,w=+$("bW").value,act=dynOn?1.2:+$("bAct").value,adj=+$("bGoal").value;
   if(!a||!h||!w){$("calcOut").textContent="請先填年齡、身高和體重。";return}
   const bmr=10*w+6.25*h-5*a+(sex==="m"?5:-161), tdee=Math.round(bmr*act);
   const kcal=Math.max(sex==="m"?1500:1200,Math.round((tdee+adj)/10)*10);
   const p=Math.round(w*(adj<0?1.8:1.6)), f=Math.round(kcal*0.27/9), c=Math.max(0,Math.round((kcal-p*4-f*9)/4));
   $("gK").value=kcal;$("gP").value=p;$("gC").value=c;$("gF").value=f;
-  $("calcOut").textContent=`基礎代謝約 ${Math.round(bmr)} kcal，每日消耗約 ${tdee} kcal。已填入建議值，確認後按「儲存目標」。`;
+  $("calcOut").textContent=`基礎代謝約 ${Math.round(bmr)} kcal，${dynOn?"久坐時":""}每日消耗約 ${tdee} kcal。已填入建議值${dynOn?"，活動消耗會每天另外加上去":""}，確認後按「儲存目標」。`;
 };
 $("goalSave").onclick=()=>{
   cache.profile={goal:{kcal:Math.max(800,+$("gK").value||1800),p:+$("gP").value||0,c:+$("gC").value||0,f:+$("gF").value||0},
-    body:{sex:$("bSex").value,age:+$("bAge").value||null,h:+$("bH").value||null,w:+$("bW").value||null,act:$("bAct").value,goal:$("bGoal").value}};
+    body:{sex:$("bSex").value,age:+$("bAge").value||null,h:+$("bH").value||null,w:+$("bW").value||null,act:$("bAct").value,goal:$("bGoal").value},
+    dyn:{on:$("gDyn").checked,ratio:+$("gRatio").value||0.75}};
   cache.dirtyProfile=true; saveCache(); render(); hide(); toast("目標已更新"); sync();
 };
 
@@ -709,13 +839,38 @@ $("sSave").onclick=()=>{
   hide(); toast("設定已儲存"); render(); sync();
 };
 
+/* activity: typed in, or sent by the iOS Shortcut as #d=YYYY-MM-DD&a=<active kcal>&s=<steps> */
+function setActivity(k,active,steps,src){
+  if(!(active>0)&&!(steps>0)){delete cache.activity[k]}
+  else cache.activity[k]={active:Math.round(active||0),steps:Math.round(steps||0),src,t:Date.now()};
+  render(); markDay(k);
+}
+$("activityRow").onclick=()=>{
+  const a=cache.activity[state.date]||{}, d=parseKey(state.date);
+  $("actDate").textContent=`${d.getMonth()+1}月${d.getDate()}日 週${WD[d.getDay()]}`;
+  $("aK").value=a.active||""; $("aSteps").value=a.steps||""; show("sheetAct");
+};
+$("actSave").onclick=()=>{setActivity(state.date,+$("aK").value||0,+$("aSteps").value||0,"manual");hide();toast("活動消耗已更新")};
+const numOf=v=>Number(String(v||"").replace(/[^\d.]/g,""))||0;
+function importFromHash(){
+  const h=location.hash.slice(1); if(!h||h.indexOf("a=")<0)return;
+  const q=new URLSearchParams(h), d=(q.get("d")||"").trim(), today=keyOf(new Date());
+  const k=/^\d{4}-\d{2}-\d{2}$/.test(d)?d:today;
+  const a=numOf(q.get("a")), s=numOf(q.get("s"));
+  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){location.hash=""}
+  if(k>today||a>10000||s>200000){toast("健康數據看起來不對，沒有寫入");return}
+  state.date=k; setActivity(k,a,s,"health");
+  toast(`已從健康 App 帶入：活動 ${Math.round(a)} kcal${s?"、"+Math.round(s).toLocaleString("zh-TW")+" 步":""}`+(ghReady()?"":"（尚未設定 GitHub，只存在這個瀏覽器）"));
+}
+window.addEventListener("hashchange",importFromHash);
+
 /* date nav */
 function go(k){state.date=k;render();sync()}
 $("prevDay").onclick=()=>go(shift(state.date,-1));
 $("nextDay").onclick=()=>{const t=keyOf(new Date());if(state.date<t)go(shift(state.date,1))};
 $("todayBtn").onclick=()=>go(keyOf(new Date()));
 
-render(); sync();
+render(); importFromHash(); sync();
 })();
 </script>
 </body>
