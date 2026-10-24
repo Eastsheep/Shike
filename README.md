@@ -8,6 +8,7 @@
 |---|---|
 | 網頁（這個 repo） | GitHub Pages，公開 |
 | 飲食紀錄 | 另一個**私人** repo（例如 `shike-data`），`data/YYYY-MM.json` 每月一個檔（飲食和活動消耗），`profile.json` 存目標 |
+| 我的食物 | 同一個私人 repo 的 `myfoods.json`（自己存的常吃食物，含照片） |
 | 食物照片 | 同一個私人 repo 的 `photos/YYYY-MM/`，壓縮成約 1080px 的 JPEG；手機上也會留一份，離線時先存著、連線後再上傳 |
 | AI 估算 | DeepSeek API，模型 `deepseek-flash` |
 
