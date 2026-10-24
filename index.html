@@ -617,6 +617,7 @@ function render(){
   $("todayBtn").hidden=k===today; $("nextDay").disabled=k>=today;
   $("setupBanner").hidden=ghReady()&&!!cfg.dsKey;
   const items=cache.days[k]||[], t=totals(items), g=goalFor(k), act=cache.activity[k], dyn=profile().dyn||{};
+  if(!$("sheetAct").hidden&&document.activeElement!==$("aK")&&document.activeElement!==$("aSteps")) fillActSheet();
   $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}${g.est?"，依活動量估算":""}）`:"";
   $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":g.est?"未帶入":"—";
   $("actSub").textContent=g.est?`沒有健康數據，先依「${ACT_NAME[selAct()]||"所選活動量"}」估算 +${g.extra} kcal · 點此帶入實際數字`:act?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
@@ -1038,7 +1039,8 @@ function setActivity(k,active,steps,src){
   else cache.activity[k]={active:Math.round(active||0),steps:Math.round(steps||0),src,t:Date.now()};
   render(); markDay(k);
 }
-$("activityRow").onclick=()=>{
+/* also called from render(), so numbers brought in by the shortcut or a sync show up in the open sheet */
+function fillActSheet(){
   const a=cache.activity[state.date]||{}, d=parseKey(state.date);
   $("actDate").textContent=`${d.getMonth()+1}月${d.getDate()}日 週${WD[d.getDay()]}`;
   $("aK").value=a.active||""; $("aSteps").value=a.steps||"";
@@ -1046,8 +1048,8 @@ $("activityRow").onclick=()=>{
   const isToday=state.date===keyOf(new Date());
   $("runShortcut").href="shortcuts://run-shortcut?name=%E9%A3%9F%E5%88%BB%E5%81%A5%E5%BA%B7&input=text&text="+state.date;
   $("runShortcut").textContent=`從健康 App 帶入${isToday?"今天":` ${d.getMonth()+1}/${d.getDate()} `}的數字`;
-  show("sheetAct");
-};
+}
+$("activityRow").onclick=()=>{fillActSheet();show("sheetAct")};
 $("actSave").onclick=()=>{setActivity(state.date,+$("aK").value||0,+$("aSteps").value||0,"manual");hide();toast("活動消耗已更新")};
 const numOf=v=>Number(String(v||"").replace(/[^\d.]/g,""))||0;
 /* accepts 2026-10-22, 2026/10/22, 2026年10月22日, with or without a time after it */
