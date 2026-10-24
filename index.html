@@ -1199,7 +1199,10 @@ $("addManual").onclick=()=>{
   $("recentWrap").hidden=!seen.size;
   myManaging=false; renderMy();
   show("sheetManual");
+  clampRows(rc,3);
 };
+/* keep only the chips on the first n wrapped rows */
+function clampRows(box,n){const tops=[];[...box.children].forEach(c=>{const t=c.offsetTop;if(!tops.includes(t))tops.push(t);if(tops.indexOf(t)>=n)c.remove()})}
 $("manualForm").addEventListener("submit",e=>{e.preventDefault();
   const q=+$("mQty").value, u=units[+$("mUnit").value];
   const old=editingId&&(cache.days[state.date]||[]).find(x=>x.id===editingId);
