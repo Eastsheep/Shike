@@ -1050,15 +1050,23 @@ $("activityRow").onclick=()=>{
 };
 $("actSave").onclick=()=>{setActivity(state.date,+$("aK").value||0,+$("aSteps").value||0,"manual");hide();toast("活動消耗已更新")};
 const numOf=v=>Number(String(v||"").replace(/[^\d.]/g,""))||0;
+/* accepts 2026-10-22, 2026/10/22, 2026年10月22日, with or without a time after it */
+function parseDateParam(s){
+  const m=String(s||"").match(/(\d{4})\D{1,2}(\d{1,2})\D{1,2}(\d{1,2})/); if(!m)return null;
+  const k=`${m[1]}-${pad(m[2])}-${pad(m[3])}`, d=parseKey(k);
+  return keyOf(d)===k?k:null;
+}
 function importFromHash(){
   const h=location.hash.slice(1); if(!h||h.indexOf("a=")<0)return;
-  const q=new URLSearchParams(h), d=(q.get("d")||"").trim(), today=keyOf(new Date());
-  const k=/^\d{4}-\d{2}-\d{2}$/.test(d)?d:today;
+  const q=new URLSearchParams(h), raw=(q.get("d")||"").trim(), today=keyOf(new Date());
+  const k=raw?parseDateParam(raw):today;
   const a=numOf(q.get("a")), s=numOf(q.get("s"));
   try{history.replaceState(null,"",location.pathname+location.search)}catch(e){location.hash=""}
+  if(!k){toast(`看不懂捷徑傳來的日期「${raw.slice(0,30)}」，沒有寫入。請檢查捷徑的「格式化日期」`);return}
   if(k>today||a>10000||s>200000){toast("健康數據看起來不對，沒有寫入");return}
   state.date=k; setActivity(k,a,s,"health");
-  toast(`已從健康 App 帶入：活動 ${Math.round(a)} kcal${s?"、"+Math.round(s).toLocaleString("zh-TW")+" 步":""}`+(ghReady()?"":"（尚未設定 GitHub，只存在這個瀏覽器）"));
+  const dd=parseKey(k);
+  toast(`已從健康 App 帶入 ${dd.getMonth()+1}/${dd.getDate()}：活動 ${Math.round(a)} kcal${s?"、"+Math.round(s).toLocaleString("zh-TW")+" 步":""}`+(ghReady()?"":"（尚未設定 GitHub，只存在這個瀏覽器）"));
 }
 window.addEventListener("hashchange",importFromHash);
 
