@@ -19,7 +19,7 @@
 
 - 紀錄存在使用者的**私人** repo（例如 `shike-data`），用 GitHub Contents API 讀寫，token 是 fine-grained PAT（只開該 repo 的 Contents 讀寫）。
   - `data/YYYY-MM.json`：`{days:{"YYYY-MM-DD":[item...]}, activity:{"YYYY-MM-DD":{active,steps,src,t}}}`
-  - `profile.json`：`{goal:{kcal,p,c,f}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,ratio}}`
+  - `profile.json`：`{goal:{kcal,p,c,f}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,mode,ratio}}`（`mode` 為 `lazy`/`precise`；舊資料只有 `on`，`on:true` 視為精打細算）
 - 本機快取在 localStorage `shike:cache`，設定（GitHub 帳號/repo/token、DeepSeek key/model）在 `shike:cfg`。token 和 key 只存在瀏覽器，絕不寫進 repo。
 - 食物 item：`{id,meal(b/l/d/s),src(photo/text/manual),name,portion,kcal,p,c,f,t, q?,u?,fn?}`；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
 - 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`）。
@@ -39,10 +39,11 @@
 ## 目標計算
 
 - 計算機：有體脂率用 Katch-McArdle（370 + 21.6 × 去脂體重），否則 Mifflin-St Jeor；TDEE = BMR × 活動係數；目標 = TDEE + 調整（−500/−300/0/+250），取整到 10，有最低值。蛋白質依體重（或去脂體重）。按「算出並套用建議值」會直接儲存。
-- 「依活動調整」開啟時：基礎目標以久坐（×1.2）計算；
-  - 有健康數據的日子：加 動態能量 × 計入比例；
-  - 沒有數據的日子（含過去）：加 BMR × (所選活動量 − 1.2)，標示「依活動量估算」。
-  - 多出的熱量依基礎目標的蛋白質／碳水／脂肪熱量比例分配。
+- 「熱量估算方式」二選一（`isPrecise`）：
+  - 懶人估算：TDEE 用所選活動量，每天目標固定，活動紀錄不加到目標。
+  - 精打細算：基礎目標以久坐（×1.2）計算，活動量選單鎖住；有活動紀錄（健康 App 或手動）的日子加 動態能量 × 計入比例；沒有紀錄的日子**不估算、不加**（使用者覺得估算會在沒運動時高估）。多出的熱量依基礎目標的蛋白質／碳水／脂肪熱量比例分配。
+  - 在目標頁切換模式時，若已有計算紀錄且資料齊全會自動重算並套用。
+  - 近 7 天圖表參考線（`tdeeFor`）：懶人＝固定 TDEE；精打細算＝久坐 TDEE ＋ 當天完整活動消耗。
 - 計算過程只顯示在「目標」頁，預設收合（使用者不要在首頁看到公式）。
 
 ## iOS 捷徑「食刻健康」串接
