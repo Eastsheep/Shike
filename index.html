@@ -113,6 +113,14 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .picked{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--accent-soft);border-radius:10px;padding:8px 12px;font-size:14px}
 .linkbtn{border:0;background:none;color:var(--accent);font-weight:500;padding:4px 0}
 .portion{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
+.photopick{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.photopick img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
+.photopick .btn{min-height:40px;cursor:pointer}
+.meal li.hasph{grid-template-columns:44px 1fr auto auto}
+.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--accent-soft);border:1px solid var(--line);cursor:zoom-in;display:block}
+.viewer{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.viewer img{max-width:100%;max-height:100%;border-radius:8px;object-fit:contain}
+.viewer button{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));background:rgba(255,255,255,.15);color:#fff;border:0}
 .pick .btn{justify-content:flex-start}
 .voicewrap{position:relative}
 .voicewrap textarea{padding-right:56px}
@@ -311,6 +319,14 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
       <div class="field"><label for="mUnit">單位</label><select id="mUnit"></select></div>
     </div>
     <div class="hint" id="mCalcHint" hidden>熱量和營養素會依份量自動換算，也可以直接修改數字。</div>
+    <div class="field"><label for="mPhotoIn">照片（選填）</label>
+      <div class="photopick">
+        <img id="mPhotoPrev" alt="這項食物的照片" hidden>
+        <label class="btn" for="mPhotoIn" id="mPhotoBtn">加入照片</label>
+        <button type="button" class="linkbtn" id="mPhotoDel" hidden>移除照片</button>
+      </div>
+      <input type="file" id="mPhotoIn" accept="image/*" hidden>
+    </div>
     <div class="grid4">
       <div class="field"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
       <div class="field"><label for="mP">蛋白質 g</label><input id="mP" type="number" inputmode="decimal" min="0" step="0.1"></div>
@@ -395,6 +411,8 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   <div class="status" id="sStatus" hidden></div>
 </div></div>
 
+<div class="viewer" id="viewer" hidden role="dialog" aria-label="照片"><img id="viewerImg" alt="食物照片"><button class="iconbtn" id="viewerClose" type="button" aria-label="關閉">✕</button></div>
+
 <div class="toast" id="toast" hidden><span id="toastTxt"></span><button id="toastAct" hidden>復原</button></div>
 
 <script src="foods.js"></script>
@@ -424,7 +442,7 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 /* ---------- config + local cache ---------- */
 const CFG="shike:cfg", CACHE="shike:cache";
 let cfg=Object.assign({owner:"",repo:"shike-data",token:"",dsKey:"",dsModel:"deepseek-flash"},lsGet(CFG,{}));
-const cache=Object.assign({days:{},activity:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false},lsGet(CACHE,{}));
+const cache=Object.assign({days:{},activity:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false,pendingPhotos:[]},lsGet(CACHE,{}));
 const state={date:keyOf(new Date())};
 const defaultProfile={goal:{kcal:1800,p:110,c:200,f:60},body:{}};
 const profile=()=>cache.profile||defaultProfile;
@@ -454,13 +472,62 @@ const monthPath=m=>`data/${m}.json`;
 function monthDays(m){const o={};for(const k in cache.days)if(monthOf(k)===m&&cache.days[k].length)o[k]=cache.days[k];return o}
 function monthAct(m){const o={};for(const k in cache.activity)if(monthOf(k)===m)o[k]=cache.activity[k];return o}
 
+/* ---------- photos ----------
+   Each photo is a JPEG kept in IndexedDB on this device and uploaded to the data repo as
+   photos/YYYY-MM/<id>.jpg. Items store only the id ("YYYY-MM/<id>"); other devices fetch it on demand. */
+const PDB=(()=>{
+  let dbp=null;
+  const open=()=>dbp||(dbp=new Promise((ok,bad)=>{const r=indexedDB.open("shike-photos",1);r.onupgradeneeded=()=>r.result.createObjectStore("p");r.onsuccess=()=>ok(r.result);r.onerror=()=>bad(r.error)}));
+  const run=async(mode,fn)=>{const db=await open();return new Promise((ok,bad)=>{const t=db.transaction("p",mode);const req=fn(t.objectStore("p"));t.oncomplete=()=>ok(req.result);t.onerror=()=>bad(t.error)})};
+  return {get:id=>run("readonly",s=>s.get(id)).catch(()=>null),put:(id,b)=>run("readwrite",s=>s.put(b,id)).catch(()=>null)};
+})();
+const photoPath=id=>`photos/${id}.jpg`;
+const newPhotoId=k=>monthOf(k)+"/"+uid();
+const photoURLs=new Map(), photoMiss=new Map();   /* id → time of the last failed download */
+function blobB64(b){return new Promise((ok,bad)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=bad;r.readAsDataURL(b)})}
+async function ghPutBin(path,blob){
+  const r=await fetch(ghUrl(path),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:"照片 "+path,content:await blobB64(blob)})});
+  if(!r.ok&&r.status!==422)throw {status:r.status};   /* 422: already uploaded */
+}
+async function ghGetRaw(path){
+  const r=await fetch(ghUrl(path),{headers:Object.assign(ghHeaders(),{"Accept":"application/vnd.github.raw"}),cache:"no-store"});
+  return r.ok?await r.blob():null;
+}
+async function photoURL(id){
+  if(photoURLs.has(id))return photoURLs.get(id);
+  let b=await PDB.get(id);
+  if(!b&&ghReady()&&Date.now()-(photoMiss.get(id)||0)>60000){
+    try{b=await ghGetRaw(photoPath(id));if(b)PDB.put(id,b)}catch(e){b=null}
+    if(!b)photoMiss.set(id,Date.now());
+  }
+  if(!b)return null;
+  const u=URL.createObjectURL(b);photoURLs.set(id,u);return u;
+}
+async function savePhoto(id,blob){
+  photoURLs.set(id,URL.createObjectURL(blob));
+  await PDB.put(id,blob);
+  if(!cache.pendingPhotos.includes(id))cache.pendingPhotos.push(id);
+  saveCache(); render(); sync();
+}
+/* smaller copy for keeping: about 1080px, JPEG 0.75 */
+async function shrinkBlob(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((ok,bad)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=bad;i.src=url});
+    const s=Math.min(1,1080/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement("canvas");c.width=Math.round(img.naturalWidth*s);c.height=Math.round(img.naturalHeight*s);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(ok=>c.toBlob(ok,"image/jpeg",0.75));
+  }finally{URL.revokeObjectURL(url)}
+}
+
 /* ---------- sync ---------- */
 let syncing=false, syncErr=null, pulled=new Set();
 function setSync(){
   const el=$("syncState");
   el.classList.toggle("err",!!syncErr);
   if(!ghReady()){el.textContent="只存在這台裝置";return}
-  el.textContent=syncErr?syncErr+"（點此重試）":syncing?"同步中…":(cache.dirtyMonths.length||cache.dirtyProfile)?"等待同步":"已同步到 GitHub";
+  el.textContent=syncErr?syncErr+"（點此重試）":syncing?"同步中…":(cache.dirtyMonths.length||cache.dirtyProfile||cache.pendingPhotos.length)?"等待同步":"已同步到 GitHub";
 }
 function ghErrText(e){
   if(e&&e.status===401)return "GitHub token 無效或過期";
@@ -519,10 +586,16 @@ async function sync(){
       catch(e){ if(e&&(e.status===409||e.status===422)){const p=await ghGet("profile.json");cache.shas["profile.json"]=await ghPut("profile.json",cache.profile,p&&p.sha,"更新目標")} else throw e }
       cache.dirtyProfile=false;
     }
+    while(cache.pendingPhotos.length){
+      const id=cache.pendingPhotos[0], b=await PDB.get(id);
+      if(b) await ghPutBin(photoPath(id),b);
+      cache.pendingPhotos=cache.pendingPhotos.filter(x=>x!==id);
+      saveCache();
+    }
     saveCache();
   }catch(e){syncErr=ghErrText(e)}
   syncing=false; setSync(); render();
-  if(!syncErr&&(cache.dirtyMonths.length||cache.dirtyProfile)) sync();
+  if(!syncErr&&(cache.dirtyMonths.length||cache.dirtyProfile||cache.pendingPhotos.length)) sync();
 }
 function markDay(k){const m=monthOf(k);if(!cache.dirtyMonths.includes(m))cache.dirtyMonths.push(m);saveCache();sync()}
 $("syncState").onclick=()=>{if(!ghReady())openSettings();else{pulled.clear();sync()}};
@@ -661,6 +734,13 @@ function render(){
         macroLine(li.querySelector(".sub"),it.portion,it.p,it.c,it.f);
         li.children[1].textContent=Math.round(it.kcal);
         li.querySelector(".del").onclick=()=>removeItem(it.id);
+        if(it.photo){
+          li.classList.add("hasph");
+          const im=document.createElement("img"); im.className="thumb"; im.alt=it.name+" 的照片";
+          im.onclick=e=>{e.stopPropagation();openViewer(it.photo)};
+          photoURL(it.photo).then(u=>{if(u)im.src=u});
+          li.prepend(im);
+        }
         ul.append(li);
       }
       sec.append(ul);
@@ -693,7 +773,7 @@ function renderWeek(){
 function addItems(list,meal,src){
   const k=state.date; const arr=(cache.days[k]||[]).slice();
   for(const x of list) arr.push(Object.assign({id:uid(),meal,src,name:x.name,portion:x.portion||"",kcal:Math.round(+x.kcal||0),p:r1(x.p),c:r1(x.c),f:r1(x.f),t:Date.now()},
-    x.q?{q:x.q,u:x.u}:{}, x.fn?{fn:x.fn}:{}));
+    x.q?{q:x.q,u:x.u}:{}, x.fn?{fn:x.fn}:{}, x.photo?{photo:x.photo}:{}));
   cache.days[k]=arr; render(); markDay(k);
   toast(`已加入 ${list.length} 項到${MEALS.find(m=>m[0]===meal)[1]}`);
 }
@@ -748,7 +828,10 @@ function showCands(target,res,src){
   mealSelect(act.querySelector("select"));
   const sumUp=()=>{const s=[...wrap.children].map(c=>c._get()).filter(Boolean);tot.textContent=`合計約 ${Math.round(s.reduce((a,b)=>a+b.kcal,0))} kcal · AI 估算僅供參考，可直接修改數字`};
   wrap.addEventListener("input",sumUp);wrap.addEventListener("change",sumUp);sumUp();
-  act.querySelector("button").onclick=()=>{const s=[...wrap.children].map(c=>c._get()).filter(Boolean);if(!s.length){toast("請至少勾選一項");return}addItems(s,act.querySelector("select").value,src);hide();resetEstimate(src)};
+  act.querySelector("button").onclick=()=>{const s=[...wrap.children].map(c=>c._get()).filter(Boolean);if(!s.length){toast("請至少勾選一項");return}
+    /* the photo used for recognition is kept with every item it produced */
+    if(src==="photo"&&photoFile){const pid=newPhotoId(state.date), f=photoFile;s.forEach(x=>x.photo=pid);shrinkBlob(f).then(b=>b&&savePhoto(pid,b)).catch(()=>{})}
+    addItems(s,act.querySelector("select").value,src);hide();resetEstimate(src)};
   target.append(tot,act);
 }
 function needKey(statusEl){
@@ -884,14 +967,43 @@ function openEdit(id){
   else{clearFood(it.u); if(!it.q&&it.portion){$("mCalcHint").hidden=false;$("mCalcHint").textContent="原本份量：「"+it.portion+"」，可以改用數量和單位重新選。"}}
   $("mQty").value=it.q?fmtQ(it.q):"";
   fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f));
+  setMPhoto(it.photo||null);
   show("sheetManual");
 }
+/* photo picked in the manual / edit sheet: kept as a file until the form is saved */
+let mPh={id:null,file:null,removed:false}, mPhUrl=null;
+function setMPhoto(id){
+  if(mPhUrl){URL.revokeObjectURL(mPhUrl);mPhUrl=null}
+  mPh={id,file:null,removed:false}; $("mPhotoIn").value="";
+  const im=$("mPhotoPrev"); im.hidden=true; im.removeAttribute("src");
+  if(id) photoURL(id).then(u=>{if(u&&mPh.id===id&&!mPh.file){im.src=u;im.hidden=false}});
+  $("mPhotoBtn").textContent=id?"換一張":"加入照片"; $("mPhotoDel").hidden=!id;
+}
+$("mPhotoIn").onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f)return;
+  if(mPhUrl)URL.revokeObjectURL(mPhUrl); mPhUrl=URL.createObjectURL(f);
+  mPh.file=f; mPh.removed=false;
+  $("mPhotoPrev").src=mPhUrl; $("mPhotoPrev").hidden=false; $("mPhotoBtn").textContent="換一張"; $("mPhotoDel").hidden=false;
+};
+$("mPhotoDel").onclick=()=>{
+  mPh.file=null; mPh.removed=true; $("mPhotoIn").value="";
+  $("mPhotoPrev").hidden=true; $("mPhotoPrev").removeAttribute("src"); $("mPhotoBtn").textContent="加入照片"; $("mPhotoDel").hidden=true;
+};
+$("mPhotoPrev").onclick=()=>{if($("mPhotoPrev").src){$("viewerImg").src=$("mPhotoPrev").src;$("viewer").hidden=false}};
+function openViewer(id){
+  photoURL(id).then(u=>{
+    if(!u){toast("這張照片還沒下載到這台裝置，請確認已連上 GitHub");return}
+    $("viewerImg").src=u; $("viewer").hidden=false;
+  });
+}
+$("viewer").onclick=()=>{$("viewer").hidden=true};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("viewer").hidden=true});
 $("mDelete").onclick=()=>{const id=editingId;hide();manualMode(null);removeItem(id)};
 $("toPhoto").onclick=()=>$("addPhoto").onclick();
 $("toText").onclick=()=>$("addText").onclick();
 $("toManual").onclick=()=>$("addManual").onclick();
 $("addManual").onclick=()=>{
-  $("manualForm").reset(); manualMode(null); clearFood();
+  $("manualForm").reset(); manualMode(null); clearFood(); setMPhoto(null);
   mealSelect($("mMeal"));
   $("fSearch").value=""; showFoodList(false);
   const seen=new Map();
@@ -910,6 +1022,8 @@ $("manualForm").addEventListener("submit",e=>{e.preventDefault();
   const old=editingId&&(cache.days[state.date]||[]).find(x=>x.id===editingId);
   const v={name:$("mName").value.trim(),kcal:Math.round(+$("mK").value||0),p:r1($("mP").value),c:r1($("mC").value),f:r1($("mF").value),
     portion:q>0&&u?fmtQ(q)+" "+u.lab:(old?old.portion||"":""),q:q>0?q:null,u:q>0&&u?u.lab:null,fn:selFood?selFood.n:null};
+  if(mPh.file){const pid=newPhotoId(state.date), f=mPh.file;v.photo=pid;shrinkBlob(f).then(b=>b&&savePhoto(pid,b)).catch(()=>toast("照片處理失敗，請換一張"))}
+  else if(mPh.removed) v.photo=null;
   if(editingId){
     const k=state.date, arr=(cache.days[k]||[]).slice(), i=arr.findIndex(x=>x.id===editingId);
     if(i>=0){arr[i]=Object.assign({},arr[i],v,{meal:$("mMeal").value});cache.days[k]=arr;render();markDay(k);toast("已更新「"+v.name+"」")}

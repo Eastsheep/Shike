@@ -24,6 +24,7 @@
 - 食物 item：`{id,meal(b/l/d/s),src(photo/text/manual),name,portion,kcal,p,c,f,t, q?,u?,fn?}`；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
 - 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`），因為捷徑是在 Safari 帶入、主畫面 App 是另一份 localStorage。
 - 家人共用：同一個網址，各自在設定裡填不同的資料 repo 和 token。
+- 照片：item 的 `photo` 是 id（`YYYY-MM/<uid>`），檔案在資料 repo `photos/<id>.jpg`（約 1080px、JPEG 0.75）。本機存在 IndexedDB `shike-photos`，待上傳清單在 `cache.pendingPhotos`，由 `sync()` 上傳；其他裝置用 `Accept: application/vnd.github.raw` 按需下載（失敗 60 秒內不重試）。AI 拍照估算加入時，同一張照片會掛在該次所有食物上。刪除食物不會刪 GitHub 上的照片檔。
 
 ## AI 估算
 
