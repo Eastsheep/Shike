@@ -348,6 +348,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
     <div class="field"><label for="bGoal">目標</label><select id="bGoal">
       <option value="-500">減脂（每日 −500）</option><option value="-300" selected>溫和減脂（−300）</option>
       <option value="0">維持</option><option value="250">增肌（+250）</option></select></div>
+    <div class="hint" id="bActHint" hidden style="grid-column:1/-1">已開啟「依活動調整」：有健康數據的日子用實際消耗，沒有數據的日子用這裡選的活動量估算。</div>
   </div>
   <button class="btn" id="calcGo">算出並套用建議值</button>
   <div class="hint" id="calcOut"></div>
@@ -369,7 +370,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   </div>
   <div class="hint">在健康 App 的「瀏覽 → 活動 → 活動能量」可以看到當天數字。</div>
   <button class="btn primary" id="actSave" type="button">儲存</button>
-  <div class="note">想自動帶入？在「捷徑」App 建立一個名為「食刻健康」的捷徑（步驟見 README），之後按下面的按鈕就會讀取健康 App 並帶回來。</div>
+  <div class="note">想自動帶入？在「捷徑」App 建立一個名為「食刻健康」的捷徑（步驟見 README），之後按下面的按鈕，就會讀取你正在看的這一天的健康數據並帶回來。</div>
   <a class="btn" id="runShortcut" href="shortcuts://run-shortcut?name=%E9%A3%9F%E5%88%BB%E5%81%A5%E5%BA%B7">執行「食刻健康」捷徑</a>
 </div></div>
 
@@ -584,21 +585,24 @@ function macroLine(el,portion,p,c,f){
 function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i.p||0),c:a.c+(+i.c||0),f:a.f+(+i.f||0)}),{k:0,p:0,c:0,f:0})}
 /* base goal plus the counted share of that day's active energy, split across
    protein / carbs / fat in the same calorie proportions as the base goal */
-function avgActive(k){
-  const v=[];
-  for(let i=1;i<=7;i++){const a=cache.activity[shift(k,-i)];if(a&&a.active>0)v.push(a.active)}
-  return v.length?Math.round(v.reduce((x,y)=>x+y,0)/v.length):0;
+/* days without Health numbers fall back to the chosen activity level:
+   BMR × (chosen factor − base factor) on top of the base goal (marked est) */
+const selAct=()=>+((profile().body||{}).act)||1.2;
+function fallbackActive(){
+  const c=profile().calc;
+  return c&&c.bmr?Math.max(0,Math.round(c.bmr*(selAct()-(c.factor||1.2)))):0;
 }
-/* today, before the Health numbers arrive, the last 7 logged days' average stands in (marked est) */
 function goalFor(k){
   const g=profile().goal, dyn=profile().dyn||{}, a=cache.activity[k];
-  let active=a&&a.active>0?a.active:0, est=false;
-  if(dyn.on&&!active&&k===keyOf(new Date())){active=avgActive(k);est=active>0}
-  const extra=dyn.on&&active?Math.round(active*(dyn.ratio||0.75)):0;
-  if(!extra)return {kcal:g.kcal,p:g.p,c:g.c,f:g.f,extra:0,est:false,active:0};
+  let extra=0, est=false;
+  if(dyn.on){
+    if(a&&a.active>0) extra=Math.round(a.active*(dyn.ratio||0.75));
+    else if(k<=keyOf(new Date())){extra=fallbackActive();est=extra>0}
+  }
+  if(!extra)return {kcal:g.kcal,p:g.p,c:g.c,f:g.f,extra:0,est:false};
   const pk=g.p*4, ck=g.c*4, fk=g.f*9, sum=pk+ck+fk;
   const [sp,sc,sf]=sum>0?[pk/sum,ck/sum,fk/sum]:[0.25,0.5,0.25];
-  return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),extra,est,active};
+  return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),extra,est};
 }
 function render(){
   const k=state.date, today=keyOf(new Date()), d=parseKey(k);
@@ -607,9 +611,9 @@ function render(){
   $("todayBtn").hidden=k===today; $("nextDay").disabled=k>=today;
   $("setupBanner").hidden=ghReady()&&!!cfg.dsKey;
   const items=cache.days[k]||[], t=totals(items), g=goalFor(k), act=cache.activity[k], dyn=profile().dyn||{};
-  $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}${g.est?"，預估":""}）`:"";
-  $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":g.est?"約 "+g.active+" kcal":"—";
-  $("actSub").textContent=g.est?`今天還沒帶入，先用近 7 天平均 ${g.active} kcal 預估 · 點此輸入或執行捷徑`:act?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
+  $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}${g.est?"，依活動量估算":""}）`:"";
+  $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":g.est?"未帶入":"—";
+  $("actSub").textContent=g.est?`沒有健康數據，先依「${ACT_NAME[selAct()]||"所選活動量"}」估算 +${g.extra} kcal · 點此帶入實際數字`:act?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
       dyn.on?`目標計入 ${Math.round((dyn.ratio||0.75)*100)}%`:"未計入目標（可在「目標」開啟）"].filter(Boolean).join(" · ")
     :"點此輸入，或用捷徑從健康 App 帶入";
   const left=Math.round(g.kcal-t.k), over=left<0;
@@ -927,7 +931,10 @@ $("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{};
   $("gK").value=g.kcal;$("gP").value=g.p;$("gC").value=g.c;$("gF").value=g.f;
   if(b.sex)$("bSex").value=b.sex; $("bAge").value=b.age||""; $("bH").value=b.h||""; $("bW").value=b.w||""; $("bBf").value=b.bf||""; showLbm();
   if(b.act)$("bAct").value=b.act; if(b.goal!=null)$("bGoal").value=b.goal; $("calcOut").textContent="";
-  const dyn=profile().dyn||{}; $("gDyn").checked=!!dyn.on; $("gRatio").value=String(dyn.ratio||0.75); renderBreak(); show("sheetGoal")};
+  const dyn=profile().dyn||{}; $("gDyn").checked=!!dyn.on; $("gRatio").value=String(dyn.ratio||0.75); syncActSel(); renderBreak(); show("sheetGoal")};
+/* with Health activity added daily, the base uses sedentary, so the activity picker is locked */
+function syncActSel(){$("bActHint").hidden=!$("gDyn").checked}
+$("gDyn").addEventListener("change",syncActSel);
 let lastCalc=null;
 const ACT_NAME={1.2:"久坐",1.375:"輕度活動",1.55:"中度活動",1.725:"高度活動"};
 function renderBreak(){
@@ -940,7 +947,11 @@ function renderBreak(){
     [c.adj<0?"− 減脂赤字":c.adj>0?"＋ 增肌盈餘":"± 維持",`${c.adj<0?"−":c.adj>0?"+":""}${Math.abs(c.adj)} kcal`,""],
     ["＝ 每日基礎目標",`${c.kcal} kcal`,c.kcal-(c.tdee+c.adj)>10?"已調整到最低建議攝取量":"取整到 10 kcal"]
   ];
-  if(dyn.on) rows.push(["＋ 當天活動消耗",`× ${Math.round((dyn.ratio||0.75)*100)}%`,"依健康 App 每天另外加上；還沒帶入時用近 7 天平均預估"]);
+  if(dyn.on){
+    rows.push(["＋ 有健康數據的日子",`動態能量 × ${Math.round((dyn.ratio||0.75)*100)}%`,"依健康 App 每天另外加上"]);
+    const fb=fallbackActive();
+    rows.push(["＋ 沒有數據的日子",`+${fb} kcal`,fb?`依「${ACT_NAME[selAct()]||"所選活動量"}」估算：BMR × (${selAct()} − ${c.factor})`:"活動量選「久坐」時不另外加"]);
+  }
   el.textContent="";
   for(const [a,b,n] of rows){
     const r=document.createElement("div");r.className="brow";
@@ -968,7 +979,7 @@ $("calcGo").onclick=()=>{
   $("gK").value=kcal;$("gP").value=p;$("gC").value=c;$("gF").value=f;
   $("calcOut").textContent=(lbm?`依體脂率計算：去脂體重約 ${r1(lbm)} kg，`:"")+`基礎代謝約 ${Math.round(bmr)} kcal，${dynOn?"久坐時":""}每日消耗約 ${tdee} kcal。`
     +(lbm?`蛋白質依去脂體重每公斤 ${adj<0?2.2:2.0} g 計算。`:"")+`已套用為每日目標 ${kcal} kcal${dynOn?"，活動消耗會每天另外加上去":""}。`;
-  lastCalc={bmr:Math.round(bmr),tdee,factor:act,adj,kcal,formula:lbm?"Katch-McArdle（去脂體重）":"Mifflin-St Jeor",lbm:lbm?r1(lbm):null};
+  lastCalc={bmr:Math.round(bmr),tdee,factor:act,sel:+$("bAct").value,adj,kcal,formula:lbm?"Katch-McArdle（去脂體重）":"Mifflin-St Jeor",lbm:lbm?r1(lbm):null};
   saveGoal(); renderBreak(); toast(`已套用：每日 ${kcal} kcal`);
   $("gK").scrollIntoView({block:"center",behavior:"smooth"});
 };
@@ -1024,7 +1035,12 @@ function setActivity(k,active,steps,src){
 $("activityRow").onclick=()=>{
   const a=cache.activity[state.date]||{}, d=parseKey(state.date);
   $("actDate").textContent=`${d.getMonth()+1}月${d.getDate()}日 週${WD[d.getDay()]}`;
-  $("aK").value=a.active||""; $("aSteps").value=a.steps||""; show("sheetAct");
+  $("aK").value=a.active||""; $("aSteps").value=a.steps||"";
+  /* pass the viewed day to the shortcut so it reads that day's Health numbers */
+  const isToday=state.date===keyOf(new Date());
+  $("runShortcut").href="shortcuts://run-shortcut?name=%E9%A3%9F%E5%88%BB%E5%81%A5%E5%BA%B7&input=text&text="+state.date;
+  $("runShortcut").textContent=`從健康 App 帶入${isToday?"今天":` ${d.getMonth()+1}/${d.getDate()} `}的數字`;
+  show("sheetAct");
 };
 $("actSave").onclick=()=>{setActivity(state.date,+$("aK").value||0,+$("aSteps").value||0,"manual");hide();toast("活動消耗已更新")};
 const numOf=v=>Number(String(v||"").replace(/[^\d.]/g,""))||0;
