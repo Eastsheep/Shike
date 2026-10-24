@@ -14,7 +14,7 @@ GitHub token 和 DeepSeek API key 只存在手機瀏覽器的 localStorage，不
 
 ## 設定步驟
 
-1. **網頁 repo**：建立公開 repo（例如 `shike`），上傳 `index.html`、`manifest.webmanifest`、`icon.svg`、`README.md`。
+1. **網頁 repo**：建立公開 repo（例如 `shike`），上傳 `index.html`、`foods.js`、`manifest.webmanifest`、`icon.svg`、`README.md`。
    到 Settings → Pages → Branch 選 `main`、資料夾 `/ (root)` → Save。網址會是 `https://<帳號>.github.io/shike/`。
 2. **資料 repo**：建立**私人** repo `shike-data`，勾選 *Add a README file*。
 3. **GitHub token**：Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token。
@@ -24,6 +24,19 @@ GitHub token 和 DeepSeek API key 只存在手機瀏覽器的 localStorage，不
 4. **DeepSeek API key**：到 platform.deepseek.com 建立 API key，儲值少量金額即可。
 5. 手機打開網址 → 右上角齒輪 → 填入帳號、`shike-data`、token、DeepSeek key → 測試連線 → 儲存。
 6. 加入主畫面：iPhone 用 Safari 的「分享 → 加入主畫面」；Android 用 Chrome 選單的「加到主畫面」。
+
+## 食物清單（foods.js）
+
+「手動」裡的台灣常見食物清單放在 `foods.js`，每一行是一種食物：
+
+```
+["白飯", "主食", "g", "碗", 200, 366, 6.2, 82, 0.6],
+```
+
+依序是：名稱、類別、計量方式（固體 `"g"`、液體 `"ml"`）、常見份量名稱、該份量是幾 g 或幾 ml、該份量的熱量 kcal、蛋白質 g、碳水 g、脂肪 g。
+
+選了食物之後，份量可以用該食物的常見份量（例如「碗」），也可以改用 g／oz／台兩（固體）或 ml／cc／fl oz／量杯（液體），熱量會自動換算。
+要新增食物，在 GitHub 上編輯 `foods.js`，照同樣格式加一行即可（注意逗號）。數值是一般份量的估計值，實際依店家和做法而異。
 
 ## 從 Apple 健康 App 帶入活動消耗
 

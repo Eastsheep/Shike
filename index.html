@@ -91,6 +91,17 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .meal li.it:hover{background:var(--accent-soft)}
 .meal .empty{cursor:pointer}
 .pick{display:grid;gap:8px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.flist{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.frow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 12px}
+.frow:last-child{border-bottom:0}
+.frow:hover,.frow:focus-visible{background:var(--accent-soft)}
+.frow .fs{font-size:12px;color:var(--muted)}
+.frow .fk{font-family:var(--f-num);font-size:13px;white-space:nowrap}
+.flist .none{padding:12px;font-size:13px;color:var(--muted)}
+.picked{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--accent-soft);border-radius:10px;padding:8px 12px;font-size:14px}
+.linkbtn{border:0;background:none;color:var(--accent);font-weight:500;padding:4px 0}
+.portion{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
 .pick .btn{justify-content:flex-start}
 .voicewrap{position:relative}
 .voicewrap textarea{padding-right:56px}
@@ -277,11 +288,18 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   <div class="sh"><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
   <div id="manualChips" style="display:grid;gap:12px">
     <div id="recentWrap" hidden><div class="hint" style="margin-bottom:6px">最近吃過</div><div class="chips" id="recentChips"></div></div>
-    <div><div class="hint" style="margin-bottom:6px">常見食物（參考值）</div><div class="chips" id="commonChips"></div></div>
+    <div class="field"><label for="fSearch">從台灣常見食物清單找</label><input id="fSearch" type="search" placeholder="搜尋，例如：雞胸肉、珍奶、滷肉飯" autocomplete="off"></div>
+    <div class="chips" id="fCats"></div>
+    <div class="flist" id="fList"></div>
   </div>
   <form id="manualForm" style="display:grid;gap:10px">
+    <div class="picked" id="fPicked" hidden><span>已選：<b id="fPickedName"></b></span><button type="button" class="linkbtn" id="fClear">改成自訂</button></div>
     <div class="field"><label for="mName">食物名稱</label><input id="mName" required placeholder="例如：雞胸肉便當"></div>
-    <div class="field"><label for="mPortion">份量（選填）</label><input id="mPortion" placeholder="例如：1 碗、約 200g"></div>
+    <div class="portion">
+      <div class="field"><label for="mQty">數量</label><input id="mQty" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></div>
+      <div class="field"><label for="mUnit">單位</label><select id="mUnit"></select></div>
+    </div>
+    <div class="hint" id="mCalcHint" hidden>熱量和營養素會依份量自動換算，也可以直接修改數字。</div>
     <div class="grid4">
       <div class="field"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
       <div class="field"><label for="mP">蛋白質 g</label><input id="mP" type="number" inputmode="decimal" min="0" step="0.1"></div>
@@ -364,16 +382,17 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 
 <div class="toast" id="toast" hidden><span id="toastTxt"></span><button id="toastAct" hidden>復原</button></div>
 
+<script src="foods.js"></script>
 <script>
 (function(){
 "use strict";
 const MEALS=[["b","早餐"],["l","午餐"],["d","晚餐"],["s","點心"]];
-const COMMON=[
-  ["白飯 1 碗",280,5,62,0.5],["滷肉飯 小碗",420,13,55,16],["雞腿便當",850,40,95,32],["茶葉蛋 1 顆",75,7,1,5],
-  ["御飯糰 鮪魚",210,6,38,4],["蛋餅 原味",250,8,28,12],["水煎包 1 顆",200,6,25,8],["牛肉麵",650,35,75,22],
-  ["燙青菜 1 份",60,2,5,4],["雞胸肉 100g",165,31,0,3.6],["地瓜 中 1 條",130,2,30,0.2],["香蕉 1 根",95,1,24,0.3],
-  ["無糖豆漿 400ml",140,14,6,7],["拿鐵 中杯",180,9,14,9],["珍珠奶茶 全糖 700ml",650,4,110,20],["珍珠奶茶 微糖 700ml",450,4,70,18]
-];
+/* food list from foods.js: one typical serving per entry, scaled by the chosen amount */
+const FOODS=(window.SHIKE_FOODS||[]).map(a=>({n:a[0],cat:a[1],b:a[2],sl:a[3],sa:a[4],k:a[5],p:a[6],c:a[7],f:a[8]}));
+const UNITS={g:[["g",1,"g"],["oz",28.35,"oz（28.35 g）"],["台兩",37.5,"台兩（37.5 g）"]],
+             ml:[["ml",1,"ml"],["cc",1,"cc"],["fl oz",29.57,"fl oz（29.57 ml）"],["量杯",240,"量杯（240 ml）"]]};
+const GENERIC_UNITS=["份","個","碗","杯","盤","片","顆","條","匙","g","oz","ml","cc","fl oz"];
+const ALIAS={"珍奶":"珍珠奶茶","雞排":"炸雞排","飯糰":"飯糰","豆乳":"豆漿"};
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,"0");
 const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -636,7 +655,8 @@ function renderWeek(){
 /* ---------- mutations ---------- */
 function addItems(list,meal,src){
   const k=state.date; const arr=(cache.days[k]||[]).slice();
-  for(const x of list) arr.push({id:uid(),meal,src,name:x.name,portion:x.portion||"",kcal:Math.round(+x.kcal||0),p:r1(x.p),c:r1(x.c),f:r1(x.f),t:Date.now()});
+  for(const x of list) arr.push(Object.assign({id:uid(),meal,src,name:x.name,portion:x.portion||"",kcal:Math.round(+x.kcal||0),p:r1(x.p),c:r1(x.c),f:r1(x.f),t:Date.now()},
+    x.q?{q:x.q,u:x.u}:{}, x.fn?{fn:x.fn}:{}));
   cache.days[k]=arr; render(); markDay(k);
   toast(`已加入 ${list.length} 項到${MEALS.find(m=>m[0]===meal)[1]}`);
 }
@@ -741,9 +761,63 @@ $("textGo").onclick=async()=>{
 };
 
 /* manual */
-function fill(n,k,p,c,f,portion){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mPortion").value=portion||""}
+function fill(n,k,p,c,f){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f}
 function chip(label,k,onclick){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;const s=document.createElement("span");s.textContent=k;b.append(s);b.onclick=onclick;return b}
-let editingId=null;
+const fmtQ=q=>String(q>=10?Math.round(q):r1(q));
+let editingId=null, selFood=null, units=[], unitIdx=0, fCat="全部";
+
+/* unit choices: the food's own serving first, then weight or volume units; generic labels for custom foods */
+function fillUnits(lab){
+  units=selFood?[{lab:selFood.sl,base:selFood.sa,t:`${selFood.sl}（約 ${selFood.sa} ${selFood.b}）`}].concat(UNITS[selFood.b].map(([u,m,t])=>({lab:u,base:m,t})))
+               :GENERIC_UNITS.map(u=>({lab:u,base:null,t:u}));
+  const sel=$("mUnit"); sel.textContent="";
+  units.forEach((u,i)=>{const o=document.createElement("option");o.value=i;o.textContent=u.t;sel.append(o)});
+  unitIdx=Math.max(0,units.findIndex(u=>u.lab===lab)); sel.value=String(unitIdx);
+}
+function recalc(){
+  if(!selFood)return;
+  const q=+$("mQty").value, u=units[unitIdx]; if(!(q>0)||!u)return;
+  const r=q*u.base/selFood.sa;
+  fill($("mName").value||selFood.n,Math.round(selFood.k*r),r1(selFood.p*r),r1(selFood.c*r),r1(selFood.f*r));
+}
+function pickFood(f,q,lab){
+  selFood=f; $("mName").value=f.n; fillUnits(lab||f.sl); $("mQty").value=q||1; recalc();
+  $("fPicked").hidden=false; $("fPickedName").textContent=f.n;
+  $("mCalcHint").hidden=false; $("mCalcHint").textContent="熱量和營養素會依份量自動換算，也可以直接修改數字。";
+  $("mQty").focus();
+}
+function clearFood(lab){selFood=null;$("fPicked").hidden=true;$("mCalcHint").hidden=true;fillUnits(lab||"份")}
+$("fClear").onclick=()=>clearFood();
+$("mQty").addEventListener("input",recalc);
+$("mUnit").addEventListener("change",()=>{
+  const next=+$("mUnit").value, q=+$("mQty").value;
+  /* keep the same amount when switching unit, e.g. 1 碗 → 200 g */
+  if(selFood&&q>0&&units[unitIdx]&&units[next]) $("mQty").value=fmtQ(q*units[unitIdx].base/units[next].base);
+  unitIdx=next; recalc();
+});
+function renderCats(){
+  const box=$("fCats"); box.textContent="";
+  ["全部",...new Set(FOODS.map(f=>f.cat))].forEach(c=>{
+    const b=document.createElement("button");b.type="button";b.className="chip"+(c===fCat?" on":"");b.textContent=c;
+    b.onclick=()=>{fCat=c;renderCats();renderFoods()};box.append(b);
+  });
+}
+function renderFoods(){
+  let q=$("fSearch").value.trim(); q=ALIAS[q]||q;
+  const list=FOODS.filter(f=>(fCat==="全部"||f.cat===fCat)&&(!q||f.n.includes(q)||f.cat.includes(q)));
+  const box=$("fList"); box.textContent="";
+  if(!list.length){const d=document.createElement("div");d.className="none";d.textContent="清單裡沒有這個食物，可以直接在下面自己填，或改用「描述」讓 AI 估算。";box.append(d);return}
+  for(const f of list.slice(0,80)){
+    const b=document.createElement("button");b.type="button";b.className="frow";
+    b.innerHTML=`<span><span class="fn"></span><br><span class="fs"></span></span><span class="fk"></span>`;
+    b.querySelector(".fn").textContent=f.n;
+    b.querySelector(".fs").textContent=`1 ${f.sl}・約 ${f.sa} ${f.b}`;
+    b.querySelector(".fk").textContent=f.k+" kcal";
+    b.onclick=()=>pickFood(f); box.append(b);
+  }
+}
+$("fSearch").addEventListener("input",renderFoods);
+const findFood=n=>FOODS.find(f=>f.n===n);
 function manualMode(edit){
   editingId=edit||null;
   $("manualTitle").textContent=edit?"編輯食物":"手動紀錄";
@@ -753,7 +827,11 @@ function manualMode(edit){
 function openEdit(id){
   const it=(cache.days[state.date]||[]).find(i=>i.id===id); if(!it)return;
   $("manualForm").reset(); manualMode(id); mealSelect($("mMeal")); $("mMeal").value=it.meal;
-  fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f),it.portion);
+  const f=it.fn&&findFood(it.fn);
+  if(f){selFood=f;$("fPicked").hidden=false;$("fPickedName").textContent=f.n;fillUnits(it.u);$("mCalcHint").hidden=false;$("mCalcHint").textContent="改數量或單位會重新換算熱量。"}
+  else{clearFood(it.u); if(!it.q&&it.portion){$("mCalcHint").hidden=false;$("mCalcHint").textContent="原本份量：「"+it.portion+"」，可以改用數量和單位重新選。"}}
+  $("mQty").value=it.q?fmtQ(it.q):"";
+  fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f));
   show("sheetManual");
 }
 $("mDelete").onclick=()=>{const id=editingId;hide();manualMode(null);removeItem(id)};
@@ -761,22 +839,30 @@ $("toPhoto").onclick=()=>$("addPhoto").onclick();
 $("toText").onclick=()=>$("addText").onclick();
 $("toManual").onclick=()=>$("addManual").onclick();
 $("addManual").onclick=()=>{
-  $("manualForm").reset(); manualMode(null);
+  $("manualForm").reset(); manualMode(null); clearFood();
   mealSelect($("mMeal"));
-  const cc=$("commonChips"); if(!cc.children.length) COMMON.forEach(([n,k,p,c,f])=>cc.append(chip(n,k,()=>fill(n,k,p,c,f))));
+  $("fSearch").value=""; renderCats(); renderFoods();
   const seen=new Map();
   Object.keys(cache.days).sort().reverse().slice(0,14).forEach(k=>(cache.days[k]||[]).slice().reverse().forEach(i=>{if(!seen.has(i.name)&&seen.size<10)seen.set(i.name,i)}));
-  const rc=$("recentChips"); rc.textContent=""; seen.forEach(i=>rc.append(chip(i.name,Math.round(i.kcal),()=>fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f)))));
+  const rc=$("recentChips"); rc.textContent="";
+  seen.forEach(i=>rc.append(chip(i.name,Math.round(i.kcal),()=>{
+    const f=i.fn&&findFood(i.fn);
+    if(f){pickFood(f,i.q,i.u);fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f))}
+    else{clearFood(i.u);$("mQty").value=i.q?fmtQ(i.q):"";fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f))}
+  })));
   $("recentWrap").hidden=!seen.size;
   show("sheetManual");
 };
 $("manualForm").addEventListener("submit",e=>{e.preventDefault();
-  const v={name:$("mName").value.trim(),portion:$("mPortion").value.trim(),kcal:Math.round(+$("mK").value||0),p:r1($("mP").value),c:r1($("mC").value),f:r1($("mF").value)};
+  const q=+$("mQty").value, u=units[+$("mUnit").value];
+  const old=editingId&&(cache.days[state.date]||[]).find(x=>x.id===editingId);
+  const v={name:$("mName").value.trim(),kcal:Math.round(+$("mK").value||0),p:r1($("mP").value),c:r1($("mC").value),f:r1($("mF").value),
+    portion:q>0&&u?fmtQ(q)+" "+u.lab:(old?old.portion||"":""),q:q>0?q:null,u:q>0&&u?u.lab:null,fn:selFood?selFood.n:null};
   if(editingId){
     const k=state.date, arr=(cache.days[k]||[]).slice(), i=arr.findIndex(x=>x.id===editingId);
     if(i>=0){arr[i]=Object.assign({},arr[i],v,{meal:$("mMeal").value});cache.days[k]=arr;render();markDay(k);toast("已更新「"+v.name+"」")}
   } else addItems([v],$("mMeal").value,"manual");
-  e.target.reset(); manualMode(null); hide();
+  e.target.reset(); manualMode(null); clearFood(); hide();
 });
 
 /* voice input for the description box; falls back to the keyboard's dictation key */
