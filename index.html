@@ -937,7 +937,7 @@ function toast(msg,undo){
 /* ---------- sheets ---------- */
 let openSheet=null;
 function show(id){if(openSheet)hide();openSheet=$(id);openSheet.hidden=false;$("scrim").hidden=false}
-function hide(){if(!openSheet)return;openSheet.hidden=true;$("scrim").hidden=true;openSheet=null}
+function hide(){stopMic(true);if(!openSheet)return;openSheet.hidden=true;$("scrim").hidden=true;openSheet=null}
 $("scrim").onclick=hide;
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=hide);
 document.addEventListener("keydown",e=>{if(e.key==="Escape")hide()});
@@ -1023,6 +1023,7 @@ let textCtl=null;
 $("addText").onclick=()=>{show("sheetText");if(!needKey($("textStatus")))$("textIn").focus()};
 $("textGo").onclick=async()=>{
   if(textCtl){textCtl.abort();return}
+  stopMic(true);
   const q=$("textIn").value.trim(); if(!q){$("textIn").focus();return}
   if(needKey($("textStatus")))return;
   textCtl=new AbortController(); const btn=$("textGo"); btn.textContent="停止";
@@ -1231,21 +1232,44 @@ $("manualForm").addEventListener("submit",e=>{e.preventDefault();
   e.target.reset(); manualMode(null); clearFood(); hide();
 });
 
-/* voice input for the description box; falls back to the keyboard's dictation key */
+/* voice input for the description box; falls back to the keyboard's dictation key.
+   iOS Safari often keeps the mic on after the last result, so stop as soon as a final result
+   arrives, abort if it still hasn't ended, and always release it when leaving the sheet or page. */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let rec=null;
+var rec=null, recTimer=0;
+function stopMic(hard){
+  const r=rec; if(!r)return;
+  clearTimeout(recTimer);
+  try{hard?r.abort():r.stop()}catch(e){}
+  if(hard)micEnded(r);
+  else recTimer=setTimeout(()=>{try{r.abort()}catch(e){}micEnded(r)},1500);
+}
+function micEnded(r){
+  if(rec!==r)return;
+  clearTimeout(recTimer); rec=null;
+  r.onresult=r.onerror=r.onend=null; try{r.abort()}catch(e){}
+  $("micBtn").classList.remove("on");
+  if($("micHint").textContent.startsWith("聆聽"))$("micHint").textContent=$("textIn").value.trim()?"聽完了，確認文字後按「估算熱量」。":"點麥克風用說的，說完會自動停止。";
+}
 if(!SR){$("micBtn").hidden=true;$("micHint").textContent="也可以點鍵盤上的麥克風，用說的輸入。"}
 $("micBtn").onclick=()=>{
-  if(rec){rec.stop();return}
+  if(rec){stopMic();return}
   const box=$("textIn"), base=box.value.trim()?box.value.trim()+"、":"";
-  try{rec=new SR()}catch(e){$("micHint").textContent="這個瀏覽器不支援語音輸入，請改用鍵盤上的麥克風。";return}
-  rec.lang="zh-TW"; rec.interimResults=true; rec.continuous=false;
-  rec.onresult=e=>{let t="";for(const r of e.results)t+=r[0].transcript;box.value=base+t};
-  rec.onerror=e=>{$("micHint").textContent=(e.error==="not-allowed"||e.error==="service-not-allowed")?"沒有麥克風權限。請到 iPhone 設定允許 Safari 使用麥克風，或改用鍵盤上的麥克風。":e.error==="no-speech"?"沒聽到聲音，請再按一次麥克風。":"語音辨識失敗，請再試一次，或改用鍵盤上的麥克風。"};
-  rec.onend=()=>{rec=null;$("micBtn").classList.remove("on");if($("micHint").textContent.startsWith("聆聽"))$("micHint").textContent=box.value.trim()?"聽完了，確認文字後按「估算熱量」。":"點麥克風用說的，說完會自動停止。"};
-  try{rec.start();$("micBtn").classList.add("on");$("micHint").textContent="聆聽中…說完會自動停止，再按一次可以提早結束。"}
-  catch(e){rec=null;$("micHint").textContent="無法啟動語音輸入，請改用鍵盤上的麥克風。"}
+  let r;
+  try{r=new SR()}catch(e){$("micHint").textContent="這個瀏覽器不支援語音輸入，請改用鍵盤上的麥克風。";return}
+  rec=r;
+  r.lang="zh-TW"; r.interimResults=true; r.continuous=false;
+  /* no speech for a while: give up instead of listening forever */
+  const idle=()=>{clearTimeout(recTimer);recTimer=setTimeout(()=>stopMic(),8000)};
+  r.onresult=e=>{let t="";for(const x of e.results)t+=x[0].transcript;box.value=base+t;
+    if(e.results.length&&e.results[e.results.length-1].isFinal)stopMic(); else idle()};
+  r.onerror=e=>{$("micHint").textContent=(e.error==="not-allowed"||e.error==="service-not-allowed")?"沒有麥克風權限。請到 iPhone 設定允許 Safari 使用麥克風，或改用鍵盤上的麥克風。":e.error==="no-speech"?"沒聽到聲音，請再按一次麥克風。":e.error==="aborted"?$("micHint").textContent:"語音辨識失敗，請再試一次，或改用鍵盤上的麥克風。";stopMic(true)};
+  r.onend=()=>micEnded(r);
+  try{r.start();idle();$("micBtn").classList.add("on");$("micHint").textContent="聆聽中…說完會自動停止，再按一次可以提早結束。"}
+  catch(e){micEnded(r);$("micHint").textContent="無法啟動語音輸入，請改用鍵盤上的麥克風。"}
 };
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")stopMic(true)});
+addEventListener("pagehide",()=>stopMic(true));
 
 /* goal */
 $("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{};
