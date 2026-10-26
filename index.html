@@ -1282,26 +1282,32 @@ const preciseSel=()=>$("gModePrecise").checked;
 function syncActSel(){const p=preciseSel();$("bActHint").hidden=!p;$("bAct").disabled=p;$("gPreciseOpts").hidden=!p}
 /* switching mode changes the base TDEE, so recalculate right away when the body data allow it */
 for(const id of ["gModeLazy","gModePrecise"]) $(id).addEventListener("change",()=>{
-  syncActSel();
+  syncActSel(); renderBreak();
   if(profile().calc&&calcInputs())$("calcGo").onclick();
   else $("calcOut").textContent="切換估算方式後，請填好上面的資料並按「算出並套用建議值」，或按「儲存目標」。";
 });
 let lastCalc=null;
 const ACT_NAME={1.2:"久坐",1.375:"輕度活動",1.55:"中度活動",1.725:"高度活動"};
+/* follows the mode / activity level picked on the goal page, not only the saved
+   calculation: the steps are rebuilt from the saved BMR with the picked factor */
 function renderBreak(){
-  const c=profile().calc, g=profile().goal, dyn=profile().dyn||{}, el=$("goalBreak");
+  const c=profile().calc, g=profile().goal, el=$("goalBreak");
   if(!c){$("goalBreakWrap").hidden=true;return}
+  const prec=preciseSel(), ratio=+$("gRatio").value||0.75, adj=+$("bGoal").value;
+  const factor=prec?1.2:+$("bAct").value, stale=factor!==c.factor||adj!==c.adj;
+  const tdee=stale?Math.round(c.bmr*factor):c.tdee, kcal=stale?Math.max($("bSex").value==="m"?1500:1200,Math.round((tdee+adj)/10)*10):c.kcal;
   const rows=[
+    ["估算方式",prec?"精打細算":"懶人估算",prec?"平常以久坐計算，運動另外加":"活動量已算進 TDEE，每天目標固定"],
     ["基礎代謝 BMR",`${c.bmr} kcal`,c.formula+(c.lbm?`，去脂體重 ${c.lbm} kg`:"")],
-    ["× 活動係數",`${c.factor}`,ACT_NAME[c.factor]||""],
-    ["＝ 每日消耗 TDEE",`${c.tdee} kcal`,""],
-    [c.adj<0?"− 減脂赤字":c.adj>0?"＋ 增肌盈餘":"± 維持",`${c.adj<0?"−":c.adj>0?"+":""}${Math.abs(c.adj)} kcal`,""],
-    ["＝ 每日基礎目標",`${c.kcal} kcal`,c.kcal-(c.tdee+c.adj)>10?"已調整到最低建議攝取量":"取整到 10 kcal"]
+    ["× 活動係數",`${factor}`,(ACT_NAME[factor]||"")+(prec?"（精打細算固定用久坐）":"")],
+    ["＝ 每日消耗 TDEE",`${tdee} kcal`,""],
+    [adj<0?"− 減脂赤字":adj>0?"＋ 增肌盈餘":"± 維持",`${adj<0?"−":adj>0?"+":""}${Math.abs(adj)} kcal`,""],
+    ["＝ 每日基礎目標",`${kcal} kcal`,kcal-(tdee+adj)>10?"已調整到最低建議攝取量":"取整到 10 kcal"]
   ];
-  if(isPrecise(dyn)){
-    rows.push(["＋ 有活動紀錄的日子",`活動消耗 × ${Math.round((dyn.ratio||0.75)*100)}%`,"依健康 App 或手動輸入每天另外加上"]);
+  if(prec){
+    rows.push(["＋ 有活動紀錄的日子",`活動消耗 × ${Math.round(ratio*100)}%`,"依健康 App 或手動輸入每天另外加上"]);
     rows.push(["＋ 沒有紀錄的日子","+0 kcal","以久坐計算，不另外估算"]);
-  }
+  }else rows.push(["＋ 活動紀錄","不另外加","懶人估算已把活動量算在 TDEE 裡"]);
   el.textContent="";
   for(const [a,b,n] of rows){
     const r=document.createElement("div");r.className="brow";
@@ -1311,11 +1317,14 @@ function renderBreak(){
     if(n){const s=document.createElement("small");s.textContent=n;r.append(s)}
     el.append(r);
   }
-  if(c.kcal!==g.kcal){const m=document.createElement("div");m.className="hint";m.textContent=`目前目標已手動改成 ${g.kcal} kcal。`;el.append(m)}
+  if(stale){const m=document.createElement("div");m.className="hint";m.textContent=`上面是依目前選擇的估算方式算出的數字，按「算出並套用建議值」後才會成為每日目標（目前是 ${g.kcal} kcal）。`;el.append(m)}
+  else if(c.kcal!==g.kcal){const m=document.createElement("div");m.className="hint";m.textContent=`目前目標已手動改成 ${g.kcal} kcal。`;el.append(m)}
   $("goalBreakWrap").hidden=false;
 }
 function showLbm(){const w=+$("bW").value,bf=+$("bBf").value;$("bLbm").value=w&&bf>=3&&bf<=60?r1(w*(1-bf/100))+" kg":""}
-$("bW").addEventListener("input",showLbm); $("bBf").addEventListener("input",showLbm);
+$("bW").addEventListener("input",showLbm);
+$("bBf").addEventListener("input",showLbm);
+for(const id of ["bAct","bGoal","bSex","gRatio"]) $(id).addEventListener("change",renderBreak);
 function calcInputs(){
   const a=+$("bAge").value,h=+$("bH").value,w=+$("bW").value,bf=+$("bBf").value, lbm=bf>=3&&bf<=60&&w?w*(1-bf/100):0;
   return !w||(!lbm&&(!a||!h))?null:{a,h,w,lbm};
