@@ -16,7 +16,7 @@ GitHub token 和 DeepSeek API key 只存在手機瀏覽器的 localStorage，不
 
 ## 設定步驟
 
-1. **網頁 repo**：建立公開 repo（例如 `shike`），上傳 `index.html`、`foods.js`、`manifest.webmanifest`、`icon.svg`、`README.md`。
+1. **網頁 repo**：建立公開 repo（例如 `shike`），上傳 `index.html`、`foods.js`、`manifest.webmanifest`、`icon.svg`、`icon-180.png`、`icon-192.png`、`icon-512.png`、`icon-maskable-512.png`、`README.md`，以及整個 `splash/` 資料夾（加到主畫面後的啟動畫面）。
    到 Settings → Pages → Branch 選 `main`、資料夾 `/ (root)` → Save。網址會是 `https://<帳號>.github.io/shike/`。
 2. **資料 repo**：建立**私人** repo `shike-data`，勾選 *Add a README file*。
 3. **GitHub token**：Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token。
