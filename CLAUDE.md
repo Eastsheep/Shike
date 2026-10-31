@@ -11,7 +11,7 @@
 | `index.html` | 整個 App（HTML + CSS + JS 都在裡面，無建置步驟、無框架） |
 | `foods.js` | 台灣常見食物清單 `window.SHIKE_FOODS`，每筆 `[名稱, 類別, "g"/"ml", 份量名稱, 份量g或ml, kcal, 蛋白質, 碳水, 脂肪]`，數值是「一份」的值 |
 | `manifest.webmanifest`, `icon.svg`, `icon-*.png` | 加入主畫面用（iOS 不吃 SVG 圖示，所以 apple-touch-icon 用 `icon-180.png`） |
-| `splash/` | iOS 加到主畫面後的原生啟動畫面，`light-/dark-寬x高.png`，各 iPhone 尺寸一張，版面和 App 內的 `#splash` 一樣 |
+| `splash/` | iOS 加到主畫面後的原生啟動畫面，`寬x高.png`，各 iPhone 尺寸一張（品牌綠底，不分深淺色），版面和 App 內的 `#splash` 一樣 |
 | `README.md` | 給使用者看的設定步驟（含 iOS 捷徑步驟） |
 
 部署方式：使用者自己在 GitHub 網頁「Add file → Upload files」覆蓋檔案。改完程式要提醒他上傳哪些檔。
@@ -57,7 +57,7 @@
 
 ## 設計與 UI 慣例
 
-- 開啟畫面 `#splash`：logo＋「食刻」，至少停留約 1.2 秒（使用者覺得一閃而過太快），首次畫面與字型還沒好就等到好（字型最多等 3 秒），再淡出 0.4 秒；JS 壞掉時 CSS 動畫 3.5 秒後也會自己藏起來。「食刻」兩字的字型子集以 base64 內嵌，不會跳字。改 logo 或配色時要重產 `splash/*.png` 與 `icon-*.png`（用 Playwright 依 `#splash` 版面截圖）。
+- 開啟畫面 `#splash`：品牌綠底（#2C7650）＋白色 logo＋「食刻」，深淺色模式都一樣（使用者深色模式從主畫面開會閃，因為 iOS 不一定照深淺色挑啟動圖；綠底讓原生啟動圖和網頁開啟畫面永遠一致）。「食刻」是 SVG 字形外框（Noto Serif TC 900），第一格就出現。Google Fonts 的 CSS 改成不擋畫面（`media=print` onload 換回），開啟畫面會等它和字型載好。主畫面模式下 web view 在狀態列下方時，用 `screen.height-innerHeight` 把 logo 往上補正，對齊全螢幕的原生啟動圖。至少停留約 1.2 秒（使用者覺得一閃而過太快），首次畫面與字型還沒好就等到好（字型最多等 3 秒），再淡出 0.4 秒；JS 壞掉時 CSS 動畫 3.5 秒後也會自己藏起來。改 logo 或配色時要重產 `splash/*.png` 與 `icon-*.png`（用 Playwright 依 `#splash` 版面截圖）。
 
 - 手機優先單欄（max 560px），色彩全用 CSS 變數並支援深色模式；字體 Noto Serif TC（標題）、Noto Sans TC（內文）、IBM Plex Mono（數字）。
 - 三大營養素用彩色實心圓點表示（紅＝蛋白質、黃＝碳水、藍＝脂肪），不用 P/C/F 字母。

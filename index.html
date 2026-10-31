@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>食刻熱量日記</title>
+<meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#2C7650">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -12,31 +13,20 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-180.png">
-<!-- iOS home-screen launch screens (light/dark per iPhone size), generated to match the #splash layout -->
-<link rel="apple-touch-startup-image" media="(device-width:440px) and (device-height:956px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1320x2868.png">
-<link rel="apple-touch-startup-image" media="(device-width:440px) and (device-height:956px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1320x2868.png">
-<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1290x2796.png">
-<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1290x2796.png">
-<link rel="apple-touch-startup-image" media="(device-width:420px) and (device-height:912px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1260x2736.png">
-<link rel="apple-touch-startup-image" media="(device-width:420px) and (device-height:912px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1260x2736.png">
-<link rel="apple-touch-startup-image" media="(device-width:402px) and (device-height:874px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1206x2622.png">
-<link rel="apple-touch-startup-image" media="(device-width:402px) and (device-height:874px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1206x2622.png">
-<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1179x2556.png">
-<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1179x2556.png">
-<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1170x2532.png">
-<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1170x2532.png">
-<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1284x2778.png">
-<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1284x2778.png">
-<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1125x2436.png">
-<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1125x2436.png">
-<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1242x2688.png">
-<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1242x2688.png">
-<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-828x1792.png">
-<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-828x1792.png">
-<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-750x1334.png">
-<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-750x1334.png">
+<!-- iOS home-screen launch screens (one per iPhone size, brand green), generated to match the #splash layout -->
+<link rel="apple-touch-startup-image" media="(device-width:440px) and (device-height:956px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1320x2868.png">
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:420px) and (device-height:912px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1260x2736.png">
+<link rel="apple-touch-startup-image" media="(device-width:402px) and (device-height:874px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1206x2622.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)" href="splash/1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/750x1334.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" id="webfonts" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" media="print" onload="this.media='all';this.dataset.done=1" onerror="this.dataset.done=1">
 <style>
 /* Layout: one phone-first column (max 560px), sticky top bar, fixed add bar at the bottom, sheets slide up for each way of logging */
 :root{
@@ -55,7 +45,8 @@
   --pro:#E27D65; --carb:#E0B04C; --fat:#82A7E0; --warn:#F17C60; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
 
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+html:has(#splash){background:#2C7650}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 img{max-width:100%}
@@ -236,17 +227,17 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 
 @media (max-width:400px){.summary{grid-template-columns:112px 1fr;gap:14px}.ring{width:112px;height:112px}.ring .big{font-size:24px}.grid4{grid-template-columns:1fr 1fr}}
 
-/* Splash: covers the first paint until the app has rendered and fonts are in (min ~1.2s so the logo is seen, longer only while still loading). Same layout as the iOS startup images in splash/, so native screen -> splash -> app looks like one step. The 2-glyph wordmark font is inlined so the logo never re-flows. If the script dies, the CSS animation still hides it at 3.5s. */
-@font-face{font-family:"ShikeMark";font-weight:900;font-display:block;src:url(data:font/woff2;base64,d09GMgABAAAAAAWYABIAAAAACZQAAAU6AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGYFeGx4cQAZgP1NUQVQqAEQRCAqGTIU6CwoAATYCJAMOBCAFhBQHIAwHFyQYChu8B8jEp6dtvc8utSzayFmB0ViVgFUX2cxVelUNetHN/1yTFwU4T8G9KV7UvzVVFk24gKv13mh4oBMYuG+L3QdjV4uwgvDBJrBg+TwKGrz4xPR8BKsG9mqBrL5XbTNkDYq2RgQ3K9oUCG5R9GmDDDyogKp0gT2GwLog4LgkMEArJRgAiroKoaXMopXIDg/IhAHKYQ4TCqGaAaKbAIoqhnHULQNAN6rqlI2quj6NNbXtvdpb2wBxBpawpNBRnQLQvdh1OiyswROJyDkZdhPJJDKEHeh6kqbuU2PABTiTODNg0wIdUgk58Q9zOByYlC2VGO32INxAYiTZB0lZWUmIhu28B1SHbgJpoYcT62ojwl+gi8O51R545wKCGYKJ12QJTv/6hj4kAU4hAyKlxuwLslsIyEiBHTR8BJcAguqUbW7YvAdzxqMy3aNNZ+odEfCdWCI6HfRXqICg0xwgXIA0A7BKAffLhWBpiqIoESNlRayoh0hPLGZoPiMWi2m6gG/Ia6rXq63lD9Cvq+PVD9Zqty07eNJtSZdb8SptdxE6NZr8InWnLGitRuNPRMuOOhaOXLPGbO6WHSstSrRabcuCLrcydaeMT0m6u4tKYozjp2zkun2HTNWMnrm4Xa12pEdoNPlLVkjm7A8kI3ft2iWaPJfw80vfWnuSYbiDN2m12gSTvRrLrq6uQmeEvO64AnVnOVWoPbZs72m3zdy/r2zkvkOuaoY1FxWAJQUMIWYFTPGa7u4i07UaTXpVCCc/a7nGsfDABkL1VHfKOjUaf8mGEycsCvMK1GoTjNh7lmGoArBEBZao+r+0fTndMmLekIpjEfPkrifKhkTMqzgmj5gHsXFpGpUne7J8xIjnrnbZaa0jrrZgApIgfqOwH+Acb/z7T0j3mpq5maF58khxaPu+AvfJWPUjb12q5JT9yX85huWhTjFlhSN/FFikOSRaLVckOxmWTnq+d2ZIS++srQ+jFr5jip3skpvWzjvZ0Ns+Y3L6nWeZW+T90Luq9/8oqXzwEoMpzD/7xz6S2FRZBs9+5pUrdeNZGD6aKWTHC7nSFuF/OcP9yPYwK4YDZfO0KqCnXT9Dhd5eeaxLotngHGWrQ/T10JhVwy829rcprvJbMXHQTP1jgSHNJxPmGR8PaYzx/vz3xp6tlfmjS/Kd1z8He5NEmfEGz75SY3nEMmbQJJcR46b56XVef9KkP06SwJrPzAlojvoUY2UydqD30Fs28eH5wykzo6ZNNoGmnNtpJjn6fQb2/TVhl+rFg8FlfreWX+XW9TK3cM97bXnC8nA/yyOWAACQN3D61IETWzyr9MO/CSjqpRx6fGZ5TnDsZa+Hf7l/3oha+WIaeG8C/QF+pIf/fwyI9v7l/gsVtb4HzEQwOmvwA6BeQvIOczRnAaJ+kKGMk8GwN2ilhYKnmEQmagIZkao50COMmkIkLs7TzWouKtGm5sEe6So9BEKSIQQsMD4iUjAAYtECBVRoRhFq0Yh6NKCP09gHHeiNUHjz3NrRgVq0oQ7taEMftKARqsLz3qiFF9rRC/XIRDv6aL/moRa90Ig65CMOnvhQWEn3FhAMbraQwws+8IEfPJEMX4ShoTuomuh+gsAXcxJhaIWCgVo6UYdaDKAxGgIxRiBtNwlZyEISwuYlyHXVo2/W3As6byuAraBvm3KBCq7jl/rAF0HwjM7L4Q9bxKAG7VDOz+yymxgP/S2fFxTN4LXeRCu84cqw1O3YpNsFOcxXe4lu7FZ6KogByNf/7EVU/v/2z2vo5aIJVQyqAxKIAQ==) format("woff2")}
-#splash{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s ease,visibility 0s .4s;animation:splashAuto 0s 3.5s forwards}
+/* Splash: covers the first paint until the app has rendered and fonts are in (min ~1.2s so the logo is seen, longer only while still loading). Brand green in light and dark alike (iOS does not reliably pick a launch image by colour scheme), same layout as the iOS startup images in splash/, so native screen -> splash -> app looks like one step. The wordmark is drawn as SVG outlines (Noto Serif TC 900) so it appears in the very first frame. If the script dies, the CSS animation still hides it at 3.5s. */
+#splash{position:fixed;inset:0;z-index:1000;background:#2C7650;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s ease,visibility 0s .4s;animation:splashAuto 0s 3.5s forwards}
 #splash.out{opacity:0;visibility:hidden;pointer-events:none}
-#splash .mark{font-family:"ShikeMark",var(--f-display);font-weight:900;font-size:30px;letter-spacing:.14em;text-indent:.14em;line-height:1;color:var(--ink)}
+#splash .mark{display:block;color:#FFF}
 @keyframes splashAuto{to{opacity:0;visibility:hidden;pointer-events:none}}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
 </style>
 </head>
 <body>
-<div id="splash" aria-hidden="true"><svg viewBox="0 0 512 512" width="96" height="96"><rect width="512" height="512" rx="112" fill="#2C7650"/><circle cx="256" cy="256" r="150" fill="none" stroke="#E0EEE4" stroke-width="40" opacity=".35"/><path d="M256 106 A150 150 0 1 1 126 331" fill="none" stroke="#FFF" stroke-width="40" stroke-linecap="round"/><path d="M226 196v64a30 30 0 0 0 60 0v-64M256 196v130" fill="none" stroke="#FFF" stroke-width="22" stroke-linecap="round"/></svg><div class="mark">食刻</div></div>
+<div id="splash" aria-hidden="true"><svg viewBox="0 0 512 512" width="112" height="112"><circle cx="256" cy="256" r="150" fill="none" stroke="#FFF" stroke-width="40" opacity=".3"/><path d="M256 106 A150 150 0 1 1 126 331" fill="none" stroke="#FFF" stroke-width="40" stroke-linecap="round"/><path d="M226 196v64a30 30 0 0 0 60 0v-64M256 196v130" fill="none" stroke="#FFF" stroke-width="22" stroke-linecap="round"/></svg><svg class="mark" viewBox="0 0 2420 1000" width="72.6" height="30" fill="currentColor" aria-label="食刻"><path transform="matrix(1 0 0 -1 140 932.5)" d="M560 799Q591 762 639.0 735.0Q687 708 744.0 691.0Q801 674 860.5 665.0Q920 656 975 654L974 639Q930 614 904.5 580.5Q879 547 876 506Q805 530 743.0 571.0Q681 612 631.5 667.0Q582 722 546 787ZM576 790Q517 724 434.0 660.0Q351 596 248.5 543.0Q146 490 26 458L20 467Q116 519 197.5 588.0Q279 657 340.5 730.0Q402 803 435 867L629 812Q625 802 613.5 796.0Q602 790 576 790ZM405 208Q558 188 655.5 159.0Q753 130 806.0 97.0Q859 64 876.5 32.0Q894 0 886.0 -25.5Q878 -51 854.0 -65.5Q830 -80 799.0 -78.0Q768 -76 740 -52Q712 -19 664.5 23.5Q617 66 551.0 111.0Q485 156 400 196ZM571 683Q571 683 587.5 668.5Q604 654 627.0 633.5Q650 613 667 595Q663 579 640 579H378L370 607H517ZM725 506V478H278V506ZM344 383H206V423V551L215 558L358 506H344ZM179 39Q210 43 263.5 51.0Q317 59 384.5 70.5Q452 82 522 95L524 84Q498 66 457.0 39.0Q416 12 362.0 -20.0Q308 -52 244 -86ZM310 456 344 435V46L222 -2L278 44Q292 -14 276.0 -48.5Q260 -83 240 -96L155 32Q188 52 197.0 64.0Q206 76 206 94V456ZM892 168Q888 161 879.0 158.0Q870 155 853 158Q823 147 785.0 136.5Q747 126 706.0 118.0Q665 110 625 105L617 115Q641 137 665.0 166.0Q689 195 709.5 223.5Q730 252 742 274ZM642 506 704 570 828 478Q824 474 817.0 469.0Q810 464 799 462V254Q799 249 779.5 237.5Q760 226 732.0 216.5Q704 207 678 207H651V506ZM735 271V243H284V271ZM731 390V362H284V390Z"/><path transform="matrix(1 0 0 -1 1280 932.5)" d="M209 858Q285 854 327.0 834.5Q369 815 384.5 789.0Q400 763 394.5 738.0Q389 713 368.5 696.5Q348 680 319.5 679.5Q291 679 260 702Q257 744 240.0 784.5Q223 825 202 853ZM92 468Q122 467 176.5 466.5Q231 466 299.5 466.5Q368 467 440 468V455Q409 443 360.0 425.5Q311 408 250.5 388.0Q190 368 121 348ZM372 600Q368 590 353.0 586.0Q338 582 311 590L350 595Q324 571 284.5 541.5Q245 512 203.0 486.5Q161 461 125 446V459H183Q176 395 154.0 366.0Q132 337 110 331L66 471Q66 471 79.5 474.0Q93 477 109.0 481.0Q125 485 131 489Q142 499 152.5 520.5Q163 542 172.0 569.5Q181 597 187.5 624.0Q194 651 197 670ZM394 160Q476 142 522.5 112.5Q569 83 588.0 50.0Q607 17 604.0 -13.0Q601 -43 582.0 -62.5Q563 -82 534.5 -83.0Q506 -84 474 -60Q468 -22 454.0 16.0Q440 54 422.0 89.5Q404 125 386 155ZM548 509Q543 500 533.5 497.0Q524 494 506 496Q415 357 299.5 264.5Q184 172 38 114L31 127Q147 207 235.5 319.5Q324 432 388 588ZM626 321Q620 312 610.5 309.0Q601 306 582 308Q509 201 424.5 124.5Q340 48 241.5 -4.5Q143 -57 27 -92L22 -78Q162 -1 272.0 114.0Q382 229 461 405ZM512 780Q512 780 524.0 770.0Q536 760 555.0 744.0Q574 728 594.0 710.0Q614 692 630 677Q626 661 602 661H40L32 689H446ZM975 830Q974 819 966.0 812.0Q958 805 939 802V64Q939 16 927.5 -17.5Q916 -51 878.5 -70.5Q841 -90 763 -97Q760 -62 755.0 -37.0Q750 -12 737 4Q724 20 704.5 31.5Q685 43 644 51V63Q644 63 661.0 62.0Q678 61 701.5 60.0Q725 59 746.0 58.0Q767 57 776 57Q788 57 792.5 61.0Q797 65 797 74V847ZM772 738Q771 728 763.0 720.5Q755 713 735 710V188Q735 183 719.0 174.5Q703 166 678.5 159.5Q654 153 629 153H606V753Z"/></svg></div>
+<script>/* keep the logo where the full-screen iOS launch image had it */(function(){var d=screen.height-innerHeight;if(navigator.standalone&&d>0&&d<80)document.getElementById("splash").style.paddingBottom=d+"px"})()</script>
 
 <div class="top"><div class="wrap">
   <div class="brand">食刻<button class="sync" id="syncState" type="button">只存在這台裝置</button></div>
@@ -1496,7 +1487,9 @@ render(); importFromHash(); sync(); startHealthWait();
   const hide=()=>{if(sp.classList.contains("out"))return;sp.classList.add("out");setTimeout(()=>sp.remove(),500)};
   void document.body.offsetHeight; /* lay out now so the font loads start before we ask fonts.ready */
   const wait=ms=>new Promise(r=>setTimeout(r,Math.max(0,ms-performance.now())));
-  const fonts=Promise.race([document.fonts&&document.fonts.ready||Promise.resolve(),wait(3000)]);
+  const css=document.getElementById("webfonts");
+  const cssIn=new Promise(r=>{if(!css||css.dataset.done)return r();css.addEventListener("load",r);css.addEventListener("error",r)});
+  const fonts=Promise.race([cssIn.then(()=>{void document.body.offsetHeight;return document.fonts&&document.fonts.ready}),wait(3000)]);
   Promise.all([fonts,wait(1200)]).then(()=>requestAnimationFrame(()=>requestAnimationFrame(hide)));
 })();
 })();
