@@ -10,7 +10,8 @@
 |---|---|
 | `index.html` | 整個 App（HTML + CSS + JS 都在裡面，無建置步驟、無框架） |
 | `foods.js` | 台灣常見食物清單 `window.SHIKE_FOODS`，每筆 `[名稱, 類別, "g"/"ml", 份量名稱, 份量g或ml, kcal, 蛋白質, 碳水, 脂肪]`，數值是「一份」的值 |
-| `manifest.webmanifest`, `icon.svg` | 加入主畫面用 |
+| `manifest.webmanifest`, `icon.svg`, `icon-*.png` | 加入主畫面用（iOS 不吃 SVG 圖示，所以 apple-touch-icon 用 `icon-180.png`） |
+| `splash/` | iOS 加到主畫面後的原生啟動畫面，`light-/dark-寬x高.png`，各 iPhone 尺寸一張，版面和 App 內的 `#splash` 一樣 |
 | `README.md` | 給使用者看的設定步驟（含 iOS 捷徑步驟） |
 
 部署方式：使用者自己在 GitHub 網頁「Add file → Upload files」覆蓋檔案。改完程式要提醒他上傳哪些檔。
@@ -55,6 +56,8 @@
 - 捷徑從 Safari 開啟，Safari 也要設定 GitHub token 才會同步。
 
 ## 設計與 UI 慣例
+
+- 開啟畫面 `#splash`：logo＋「食刻」，第一次畫面完成且字型載好就淡出，最晚約 1 秒，不做人為等待；JS 壞掉時 CSS 動畫 1.6 秒後也會自己藏起來。「食刻」兩字的字型子集以 base64 內嵌，不會跳字。改 logo 或配色時要重產 `splash/*.png` 與 `icon-*.png`（用 Playwright 依 `#splash` 版面截圖）。
 
 - 手機優先單欄（max 560px），色彩全用 CSS 變數並支援深色模式；字體 Noto Serif TC（標題）、Noto Sans TC（內文）、IBM Plex Mono（數字）。
 - 三大營養素用彩色實心圓點表示（紅＝蛋白質、黃＝碳水、藍＝脂肪），不用 P/C/F 字母。

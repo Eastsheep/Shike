@@ -11,7 +11,30 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<!-- iOS home-screen launch screens (light/dark per iPhone size), generated to match the #splash layout -->
+<link rel="apple-touch-startup-image" media="(device-width:440px) and (device-height:956px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1320x2868.png">
+<link rel="apple-touch-startup-image" media="(device-width:440px) and (device-height:956px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1320x2868.png">
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1290x2796.png">
+<link rel="apple-touch-startup-image" media="(device-width:420px) and (device-height:912px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1260x2736.png">
+<link rel="apple-touch-startup-image" media="(device-width:420px) and (device-height:912px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1260x2736.png">
+<link rel="apple-touch-startup-image" media="(device-width:402px) and (device-height:874px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1206x2622.png">
+<link rel="apple-touch-startup-image" media="(device-width:402px) and (device-height:874px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1206x2622.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1179x2556.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1170x2532.png">
+<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1284x2778.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1125x2436.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-1242x2688.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-828x1792.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:light)" href="splash/light-750x1334.png">
+<link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait) and (prefers-color-scheme:dark)" href="splash/dark-750x1334.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
@@ -212,9 +235,18 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .toast button{border:0;background:none;color:var(--bg);font-weight:700;text-decoration:underline}
 
 @media (max-width:400px){.summary{grid-template-columns:112px 1fr;gap:14px}.ring{width:112px;height:112px}.ring .big{font-size:24px}.grid4{grid-template-columns:1fr 1fr}}
+
+/* Splash: covers the first paint until the app has rendered and fonts are in (max ~1s, never an artificial wait). Same layout as the iOS startup images in splash/, so native screen -> splash -> app looks like one step. The 2-glyph wordmark font is inlined so the logo never re-flows. If the script dies, the CSS animation still hides it at 1.6s. */
+@font-face{font-family:"ShikeMark";font-weight:900;font-display:block;src:url(data:font/woff2;base64,d09GMgABAAAAAAWYABIAAAAACZQAAAU6AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGYFeGx4cQAZgP1NUQVQqAEQRCAqGTIU6CwoAATYCJAMOBCAFhBQHIAwHFyQYChu8B8jEp6dtvc8utSzayFmB0ViVgFUX2cxVelUNetHN/1yTFwU4T8G9KV7UvzVVFk24gKv13mh4oBMYuG+L3QdjV4uwgvDBJrBg+TwKGrz4xPR8BKsG9mqBrL5XbTNkDYq2RgQ3K9oUCG5R9GmDDDyogKp0gT2GwLog4LgkMEArJRgAiroKoaXMopXIDg/IhAHKYQ4TCqGaAaKbAIoqhnHULQNAN6rqlI2quj6NNbXtvdpb2wBxBpawpNBRnQLQvdh1OiyswROJyDkZdhPJJDKEHeh6kqbuU2PABTiTODNg0wIdUgk58Q9zOByYlC2VGO32INxAYiTZB0lZWUmIhu28B1SHbgJpoYcT62ojwl+gi8O51R545wKCGYKJ12QJTv/6hj4kAU4hAyKlxuwLslsIyEiBHTR8BJcAguqUbW7YvAdzxqMy3aNNZ+odEfCdWCI6HfRXqICg0xwgXIA0A7BKAffLhWBpiqIoESNlRayoh0hPLGZoPiMWi2m6gG/Ia6rXq63lD9Cvq+PVD9Zqty07eNJtSZdb8SptdxE6NZr8InWnLGitRuNPRMuOOhaOXLPGbO6WHSstSrRabcuCLrcydaeMT0m6u4tKYozjp2zkun2HTNWMnrm4Xa12pEdoNPlLVkjm7A8kI3ft2iWaPJfw80vfWnuSYbiDN2m12gSTvRrLrq6uQmeEvO64AnVnOVWoPbZs72m3zdy/r2zkvkOuaoY1FxWAJQUMIWYFTPGa7u4i07UaTXpVCCc/a7nGsfDABkL1VHfKOjUaf8mGEycsCvMK1GoTjNh7lmGoArBEBZao+r+0fTndMmLekIpjEfPkrifKhkTMqzgmj5gHsXFpGpUne7J8xIjnrnbZaa0jrrZgApIgfqOwH+Acb/z7T0j3mpq5maF58khxaPu+AvfJWPUjb12q5JT9yX85huWhTjFlhSN/FFikOSRaLVckOxmWTnq+d2ZIS++srQ+jFr5jip3skpvWzjvZ0Ns+Y3L6nWeZW+T90Luq9/8oqXzwEoMpzD/7xz6S2FRZBs9+5pUrdeNZGD6aKWTHC7nSFuF/OcP9yPYwK4YDZfO0KqCnXT9Dhd5eeaxLotngHGWrQ/T10JhVwy829rcprvJbMXHQTP1jgSHNJxPmGR8PaYzx/vz3xp6tlfmjS/Kd1z8He5NEmfEGz75SY3nEMmbQJJcR46b56XVef9KkP06SwJrPzAlojvoUY2UydqD30Fs28eH5wykzo6ZNNoGmnNtpJjn6fQb2/TVhl+rFg8FlfreWX+XW9TK3cM97bXnC8nA/yyOWAACQN3D61IETWzyr9MO/CSjqpRx6fGZ5TnDsZa+Hf7l/3oha+WIaeG8C/QF+pIf/fwyI9v7l/gsVtb4HzEQwOmvwA6BeQvIOczRnAaJ+kKGMk8GwN2ilhYKnmEQmagIZkao50COMmkIkLs7TzWouKtGm5sEe6So9BEKSIQQsMD4iUjAAYtECBVRoRhFq0Yh6NKCP09gHHeiNUHjz3NrRgVq0oQ7taEMftKARqsLz3qiFF9rRC/XIRDv6aL/moRa90Ig65CMOnvhQWEn3FhAMbraQwws+8IEfPJEMX4ShoTuomuh+gsAXcxJhaIWCgVo6UYdaDKAxGgIxRiBtNwlZyEISwuYlyHXVo2/W3As6byuAraBvm3KBCq7jl/rAF0HwjM7L4Q9bxKAG7VDOz+yymxgP/S2fFxTN4LXeRCu84cqw1O3YpNsFOcxXe4lu7FZ6KogByNf/7EVU/v/2z2vo5aIJVQyqAxKIAQ==) format("woff2")}
+#splash{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .28s ease,visibility 0s .28s;animation:splashAuto 0s 1.6s forwards}
+#splash.out{opacity:0;visibility:hidden;pointer-events:none}
+#splash .mark{font-family:"ShikeMark",var(--f-display);font-weight:900;font-size:30px;letter-spacing:.14em;text-indent:.14em;line-height:1;color:var(--ink)}
+@keyframes splashAuto{to{opacity:0;visibility:hidden;pointer-events:none}}
+@media (prefers-reduced-motion:reduce){#splash{transition:none}}
 </style>
 </head>
 <body>
+<div id="splash" aria-hidden="true"><svg viewBox="0 0 512 512" width="96" height="96"><rect width="512" height="512" rx="112" fill="#2C7650"/><circle cx="256" cy="256" r="150" fill="none" stroke="#E0EEE4" stroke-width="40" opacity=".35"/><path d="M256 106 A150 150 0 1 1 126 331" fill="none" stroke="#FFF" stroke-width="40" stroke-linecap="round"/><path d="M226 196v64a30 30 0 0 0 60 0v-64M256 196v130" fill="none" stroke="#FFF" stroke-width="22" stroke-linecap="round"/></svg><div class="mark">食刻</div></div>
 
 <div class="top"><div class="wrap">
   <div class="brand">食刻<button class="sync" id="syncState" type="button">只存在這台裝置</button></div>
@@ -1458,6 +1490,14 @@ $("nextDay").onclick=()=>{const t=keyOf(new Date());if(state.date<t)go(shift(sta
 $("todayBtn").onclick=()=>go(keyOf(new Date()));
 
 render(); importFromHash(); sync(); startHealthWait();
+/* splash: fade out once the first render has painted and the web fonts are in, but never later than ~1s after the page started */
+(function(){
+  const sp=$("splash"); if(!sp)return;
+  const hide=()=>{if(sp.classList.contains("out"))return;sp.classList.add("out");setTimeout(()=>sp.remove(),400)};
+  void document.body.offsetHeight; /* lay out now so the font loads start before we ask fonts.ready */
+  const cap=new Promise(r=>setTimeout(r,Math.max(0,1000-performance.now())));
+  Promise.race([document.fonts&&document.fonts.ready||Promise.resolve(),cap]).then(()=>requestAnimationFrame(()=>requestAnimationFrame(hide)));
+})();
 })();
 </script>
 </body>
