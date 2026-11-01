@@ -22,7 +22,7 @@
   - `data/YYYY-MM.json`：`{days:{"YYYY-MM-DD":[item...]}, activity:{"YYYY-MM-DD":{active,steps,src,t}}}`
   - `profile.json`：`{goal:{kcal,p,c,f}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,mode,ratio}}`（`mode` 為 `lazy`/`precise`；舊資料只有 `on`，`on:true` 視為精打細算）
 - 本機快取在 localStorage `shike:cache`，設定（GitHub 帳號/repo/token、DeepSeek key/model）在 `shike:cfg`。token 和 key 只存在瀏覽器，絕不寫進 repo。
-- 食物 item：`{id,meal(b/l/d/s),src(photo/text/manual),name,portion,kcal,p,c,f,t, q?,u?,fn?}`；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
+- 食物 item：`{id,meal(b/l/d/s),src(photo/text/label/manual),name,portion,kcal,p,c,f,t, q?,u?,fn?}`；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
 - 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`）。
 - 食物以 item 為單位合併（`mergeDays`）：本頁沒有未上傳修改時直接用遠端；有的話依 id 聯集、`mt||t` 較新者勝、刪除記在月檔 `del:{id:{k,t}}`（保留 60 天），讓舊頁面不能把刪掉的東西帶回來、也不會覆蓋別頁新增的項目。頁面回到前景／取得焦點／bfcache 還原時會重新拉資料（`refreshFromGitHub`，5 秒節流）。
 - 月檔格式：`{days, activity, del}`。
@@ -36,6 +36,7 @@
 - DeepSeek `https://api.deepseek.com/chat/completions`，預設模型 `deepseek-flash`（支援圖片，image_url 用 base64 data URL），瀏覽器可直接呼叫（CORS 可用）。
 - 照片先用 canvas 縮到 1280px JPEG。要求回傳 JSON `{items:[{name,portion,kcal,protein,carbs,fat}],note}`，解析時容忍 code fence。
 - 結果讓使用者勾選、改數字、選 ×0.5～×2 後才加入；加入後清空照片與文字。
+- 拍營養標示（文字描述視窗的「拍營養標示，AI 直接轉換」，或餐別「＋新增」裡的「拍營養標示」）：選圖後直接送 AI，只讀標示上印的數字 `{name,unit,serving_size,servings,per_serving,per_100,note}`，不估算。結果顯示可修改的「每份／每100g」表格、每一份量與本包裝份數，使用者再選吃了多少（份／g 或 ml／整包，切換單位保持份量），才加入（`src:"label"`，標籤「標示 AI」）。可勾選存到我的食物（預設不勾）。標示照片不存。
 
 ## 目標計算
 

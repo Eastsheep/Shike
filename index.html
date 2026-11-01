@@ -217,6 +217,23 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .cand .kc{width:80px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--bg);text-align:right;font-size:16px}
 .cand select{border:1px solid var(--line);border-radius:8px;padding:4px;background:var(--bg)}
 .cand .sub{grid-column:2;font-size:12px;color:var(--muted)}
+.lbl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
+.lbl table{width:100%;border-collapse:collapse;font-size:14px}
+.lbl th{font-size:12px;font-weight:500;color:var(--muted);text-align:right;padding:0 0 4px 6px;white-space:nowrap}
+.lbl th:first-child{text-align:left;padding-left:0}
+.lbl td{padding:3px 0 3px 6px}
+.lbl td:first-child{padding-left:0;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.lbl td:first-child i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.lbl td input,.lbl .inl input,.lbl .inl select{width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);text-align:right;font-size:16px}
+.lbl .inl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+.lbl .inl{column-gap:16px}
+.lbl .pr{display:flex;gap:6px;align-items:center;white-space:nowrap}
+.lbl .inl input{width:72px}
+.lbl .inl select{width:auto;text-align:left}
+.lbl .res{font-size:15px}
+.lbl .res b{font-size:20px}
+.lbl label.ck{display:flex;gap:8px;align-items:center;font-size:14px}
+.lbl label.ck input{width:20px;height:20px;accent-color:var(--accent)}
 .note{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:8px 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 .actions .field{flex:1 1 120px}
@@ -325,6 +342,8 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   </div>
   <div class="hint" id="micHint">點麥克風用說的，說完會自動停止。</div>
   <button class="btn primary" id="textGo">估算熱量</button>
+  <button class="btn" id="labelBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>拍營養標示，AI 直接轉換</button>
+  <input type="file" id="labelIn" accept="image/*" hidden>
   <div class="status" id="textStatus" hidden></div>
   <div id="textResult"></div>
 </div></div>
@@ -334,6 +353,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   <div class="pick">
     <button class="btn primary" id="toPhoto" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>拍照估算</button>
     <button class="btn" id="toText" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/></svg>文字或語音描述</button>
+    <button class="btn" id="toLabel" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>拍營養標示</button>
     <button class="btn" id="toManual" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>手動輸入／常吃清單</button>
   </div>
 </div></div>
@@ -887,7 +907,7 @@ function render(){
         li.innerHTML=`<div class="nm"><div></div><div class="sub num"></div></div><span class="num"></span><button class="del" aria-label="刪除">×</button>`;
         const nm=li.querySelector(".nm div");
         nm.textContent=it.name;
-        if(it.src&&it.src!=="manual"){const tg=document.createElement("span");tg.className="tag";tg.textContent=it.src==="photo"?"拍照 AI":"AI";nm.append(tg)}
+        if(it.src&&it.src!=="manual"){const tg=document.createElement("span");tg.className="tag";tg.textContent=it.src==="photo"?"拍照 AI":it.src==="label"?"標示 AI":"AI";nm.append(tg)}
         macroLine(li.querySelector(".sub"),it.portion,it.p,it.c,it.f);
         li.children[1].textContent=Math.round(it.kcal);
         li.querySelector(".del").onclick=()=>removeItem(it.id);
@@ -1016,7 +1036,7 @@ function resetEstimate(src){
     $("dropTxt").innerHTML="<b>拍一張或選一張照片</b><br>整盤入鏡、從斜上方拍，估得比較準";
     $("photoHint").value=""; $("photoGo").disabled=true; $("photoResult").textContent=""; setStatus($("photoStatus"),"");
   } else {
-    $("textIn").value=""; $("textResult").textContent=""; setStatus($("textStatus"),"");
+    $("textIn").value=""; $("textResult").textContent=""; setStatus($("textStatus"),""); $("labelIn").value="";
   }
 }
 $("addPhoto").onclick=()=>{show("sheetPhoto");needKey($("photoStatus"))};
@@ -1057,6 +1077,106 @@ $("textGo").onclick=async()=>{
   }catch(e){ if(e&&e.code==="cancelled")setStatus($("textStatus"),""); else setStatus($("textStatus"),dsErr(e||{}),"err") }
   finally{textCtl=null;btn.textContent="估算熱量"}
 };
+
+/* nutrition label: AI only reads the printed numbers; the amount eaten is confirmed by the user */
+let labelCtl=null;
+$("labelBtn").onclick=()=>{if(labelCtl){labelCtl.abort();return} if(!needKey($("textStatus")))$("labelIn").click()};
+$("labelIn").onchange=async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f||needKey($("textStatus")))return;
+  stopMic(true);
+  labelCtl=new AbortController(); const btn=$("labelBtn"), old=btn.innerHTML; btn.textContent="停止";
+  setStatus($("textStatus"),"AI 正在讀營養標示，通常需要 5–30 秒…","busy"); $("textResult").textContent="";
+  try{
+    let dataUrl;
+    try{dataUrl=await shrinkToDataUrl(f)}catch(e){throw {code:"img"}}
+    const r=await askDeepSeek(`這是一張食品包裝上的「營養標示」照片。請只照標示上印的數字讀出來，不要自己估算。
+只回覆 JSON，格式：{"name":"產品名稱，看得到才填，否則空字串","unit":"g 或 ml","serving_size":30,"servings":5,"per_serving":{"kcal":150,"protein":2.1,"carbs":20.5,"fat":6.8},"per_100":{"kcal":500,"protein":7,"carbs":68.3,"fat":22.7},"note":"一句話說明"}
+規則：serving_size 是「每一份量」的公克或毫升數；servings 是「本包裝含幾份」；per_serving 是「每份」那一欄，per_100 是「每100公克／每100毫升」那一欄，標示上沒有的欄位填 null，看不清楚的數字也填 null；kcal 用「熱量（大卡）」，若只有大卡以外單位請換算成大卡；carbs 用「碳水化合物」總量；protein/carbs/fat 為公克。若照片不是營養標示，per_serving 和 per_100 都填 null 並在 note 說明。`,dataUrl,labelCtl.signal);
+    setStatus($("textStatus"),""); showLabel($("textResult"),normLabel(r));
+  }catch(e){
+    if(e&&e.code==="cancelled")setStatus($("textStatus"),"");
+    else setStatus($("textStatus"),e&&e.code==="img"?"這張照片讀不了，請換一張 JPG 或 PNG。":dsErr(e||{}),"err");
+  }finally{labelCtl=null;btn.innerHTML=old}
+};
+function normLabel(r){
+  r=r||{};
+  const n=v=>{if(v==null||v==="")return null;const x=Number(String(v).replace(/[^\d.]/g,""));return isFinite(x)&&String(v).match(/\d/)?x:null};
+  const blk=o=>{if(!o||typeof o!=="object")return null;const b={k:n(o.kcal),p:n(o.protein),c:n(o.carbs),f:n(o.fat)};return b.k==null&&b.p==null&&b.c==null&&b.f==null?null:b};
+  const unit=/ml|毫升|cc/i.test(String(r.unit||""))?"ml":"g";
+  return {name:String(r.name||"").slice(0,40),unit,size:n(r.serving_size),servings:n(r.servings),ps:blk(r.per_serving),p100:blk(r.per_100),note:typeof r.note==="string"?r.note:""};
+}
+function showLabel(target,L){
+  target.textContent="";
+  if(L.note){const n=document.createElement("div");n.className="note";n.textContent=L.note;target.append(n)}
+  if(!L.ps&&!L.p100){const e=document.createElement("div");e.className="status";e.textContent="沒有讀到營養標示的數字，請把整張表格拍清楚、避免反光再試一次。";target.append(e);return}
+  const u=L.unit, box=document.createElement("div"); box.className="lbl"; box.style.marginTop="8px";
+  const v=x=>x==null?"":String(r1(x));
+  const rows=[["k","熱量","kcal",""],["p","蛋白質","g","--pro"],["c","碳水","g","--carb"],["f","脂肪","g","--fat"]];
+  box.innerHTML=`<div class="hint">AI 讀到的標示數字，請和包裝核對，讀錯可以直接改</div>
+    <div class="field"><label for="lbName">食物名稱</label><input id="lbName" placeholder="例如：○○洋芋片"></div>
+    <div class="inl"><span class="pr">每一份量 <input data-k="size" type="number" inputmode="decimal" min="0" step="any" aria-label="每一份量"> ${u}</span><span class="pr">本包裝含 <input data-k="servings" type="number" inputmode="decimal" min="0" step="any" aria-label="本包裝份數"> 份</span></div>
+    <table><thead><tr><th></th><th>每份</th><th>每 100 ${u}</th></tr></thead><tbody>${rows.map(([k,l,un,col])=>
+      `<tr><td>${col?`<i style="background:var(${col})"></i>`:""}${l}<span class="hint">${un}</span></td><td><input data-k="ps.${k}" type="number" inputmode="decimal" min="0" step="any" aria-label="每份${l}"></td><td><input data-k="p100.${k}" type="number" inputmode="decimal" min="0" step="any" aria-label="每100${u}${l}"></td></tr>`).join("")}</tbody></table>
+    <div class="hint" style="margin-top:4px">你吃了多少</div>
+    <div class="inl"><input id="lbQty" type="number" inputmode="decimal" min="0" step="any" aria-label="數量"><select id="lbUnit" aria-label="單位"></select></div>
+    <div class="res" id="lbRes"></div><div class="hint num" id="lbSub"></div>
+    <label class="ck"><input type="checkbox" id="lbMy">存到我的食物，下次直接選</label>`;
+  const inp=k=>box.querySelector(`[data-k="${k}"]`);
+  box.querySelector("#lbName").value=L.name;
+  inp("size").value=v(L.size); inp("servings").value=v(L.servings);
+  for(const [k] of rows){inp("ps."+k).value=L.ps?v(L.ps[k]):"";inp("p100."+k).value=L.p100?v(L.p100[k]):""}
+  const num=k=>{const s=inp(k).value.trim();if(s==="")return null;const x=+s;return isFinite(x)&&x>=0?x:null};
+  const read=()=>{
+    const blk=pre=>{const b={};let any=false;for(const [k] of rows){b[k]=num(pre+"."+k);if(b[k]!=null)any=true}if(!any)return null;for(const [k] of rows)if(b[k]==null)b[k]=0;
+      if(!b.k&&(b.p||b.c||b.f))b.k=b.p*4+b.c*4+b.f*9;return b};
+    return {size:num("size"),n:num("servings"),ps:blk("ps"),p100:blk("p100")};
+  };
+  const scale=(b,m)=>({k:b.k*m,p:b.p*m,c:b.c*m,f:b.f*m});
+  /* values for one serving and for one g/ml, from whichever column is filled */
+  const basis=d=>({serv:d.ps||(d.p100&&d.size?scale(d.p100,d.size/100):null),gram:d.p100?scale(d.p100,1/100):d.ps&&d.size?scale(d.ps,1/d.size):null});
+  const qtyEl=box.querySelector("#lbQty"), unitEl=box.querySelector("#lbUnit");
+  let curU=null;
+  const fillU=()=>{
+    const d=read(), b=basis(d), opts=[];
+    if(b.serv)opts.push(["serv",`份${d.size?`（每份 ${r1(d.size)} ${u}）`:""}`]);
+    if(b.gram)opts.push(["gram",u]);
+    if(b.serv&&d.n)opts.push(["pack",`整包（${r1(d.n)} 份）`]);
+    const keep=opts.some(o=>o[0]===curU)?curU:opts.length?opts[0][0]:null;
+    unitEl.innerHTML=opts.map(([k,t])=>`<option value="${k}">${t}</option>`).join("");
+    if(keep)unitEl.value=keep; curU=keep;
+  };
+  const calc=()=>{
+    const d=read(), b=basis(d), q=Math.max(0,+qtyEl.value||0), m=unitEl.value;
+    let out=null, portion="", qq=q, uu="份";
+    if(m==="serv"&&b.serv){out=scale(b.serv,q);portion=`${fmtQ(q)} 份`+(d.size?`（${fmtQ(q*d.size)} ${u}）`:"")}
+    else if(m==="gram"&&b.gram){out=scale(b.gram,q);portion=`${fmtQ(q)} ${u}`;uu=u}
+    else if(m==="pack"&&b.serv&&d.n){out=scale(b.serv,q*d.n);portion=`${fmtQ(q)} 包（${fmtQ(q*d.n)} 份）`;qq=q*d.n}
+    return out&&{kcal:Math.round(out.k),p:out.p,c:out.c,f:out.f,portion,q:qq,u:uu};
+  };
+  const show_=()=>{const x=calc();box.querySelector("#lbRes").innerHTML=x?`約 <b class="num">${x.kcal}</b> kcal`:"請填入標示上的數字";
+    const sub=box.querySelector("#lbSub");sub.textContent="";if(x)macroLine(sub,x.portion,x.p,x.c,x.f)};
+  /* switching unit keeps the same amount when the serving weight is known */
+  unitEl.onchange=()=>{
+    const d=read(), q=+qtyEl.value||0, toG={serv:d.size,gram:1,pack:d.size&&d.n?d.size*d.n:null};
+    if(q&&toG[curU]&&toG[unitEl.value])qtyEl.value=fmtQ(q*toG[curU]/toG[unitEl.value]);
+    else qtyEl.value=unitEl.value==="gram"?(d.size?fmtQ(d.size):100):1;
+    curU=unitEl.value; show_();
+  };
+  box.addEventListener("input",e=>{if(e.target.dataset.k){fillU()}show_()});
+  fillU(); qtyEl.value=curU==="gram"?100:1; show_();
+  target.append(box);
+  const act=document.createElement("div");act.className="actions";act.style.marginTop="10px";
+  act.innerHTML=`<div class="field"><label for="labelMeal">餐別</label><select id="labelMeal"></select></div><button class="btn primary">加入紀錄</button>`;
+  mealSelect(act.querySelector("select"));
+  act.querySelector("button").onclick=()=>{
+    const x=calc(); if(!x||!(x.q>0)){toast("請填入吃了多少");return}
+    const name=box.querySelector("#lbName").value.trim()||"包裝食品";
+    const it={name,portion:x.portion,kcal:x.kcal,p:r1(x.p),c:r1(x.c),f:r1(x.f),q:x.q,u:x.u};
+    if(box.querySelector("#lbMy").checked)saveMy(it);
+    addItems([it],act.querySelector("select").value,"label");hide();resetEstimate("text");
+  };
+  target.append(act);
+}
 
 /* manual */
 function fill(n,k,p,c,f){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f}
@@ -1219,6 +1339,8 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")$("viewer").hidden=t
 $("mDelete").onclick=()=>{const id=editingId;hide();manualMode(null);removeItem(id)};
 $("toPhoto").onclick=()=>$("addPhoto").onclick();
 $("toText").onclick=()=>$("addText").onclick();
+/* open the picker inside the same tap so iOS allows it */
+$("toLabel").onclick=()=>{$("addText").onclick();$("labelIn").click()};
 $("toManual").onclick=()=>$("addManual").onclick();
 $("addManual").onclick=()=>{
   $("manualForm").reset(); manualMode(null); clearFood(); setMPhoto(null);
