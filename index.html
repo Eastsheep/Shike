@@ -32,7 +32,7 @@
 :root{
   --bg:#F2F5F1; --surface:#FFFFFF; --ink:#16201A; --muted:#5C6A61; --line:#D9E1DA;
   --accent:#2C7650; --accent-ink:#FFFFFF; --accent-soft:#E0EEE4;
-  --pro:#BD4E37; --carb:#B98210; --fat:#3866A6; --warn:#B3361D;
+  --pro:#BD4E37; --carb:#B98210; --fat:#3866A6; --fib:#5E8C31; --warn:#B3361D;
   --scrim:rgba(14,22,17,.45);
   --f-display:"Noto Serif TC","Songti TC",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
@@ -42,7 +42,7 @@
 @media (prefers-color-scheme: dark){:root{
   --bg:#0F1411; --surface:#171F1A; --ink:#E5ECE6; --muted:#97A59C; --line:#28332C;
   --accent:#62BE88; --accent-ink:#0B1A10; --accent-soft:#1B3224;
-  --pro:#E27D65; --carb:#E0B04C; --fat:#82A7E0; --warn:#F17C60; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+  --pro:#E27D65; --carb:#E0B04C; --fat:#82A7E0; --fib:#9CC66A; --warn:#F17C60; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--bg)}
@@ -196,6 +196,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .field input,.field select,.field textarea{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;min-height:44px;width:100%;min-width:0;font-size:16px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.grid4 .full{grid-column:1/-1}
 .drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface);min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:14px;cursor:pointer;color:var(--muted)}
 .drop img{max-height:240px;border-radius:10px;object-fit:contain}
 .drop b{color:var(--ink)}
@@ -217,23 +218,23 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .cand .kc{width:80px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--bg);text-align:right;font-size:16px}
 .cand select{border:1px solid var(--line);border-radius:8px;padding:4px;background:var(--bg)}
 .cand .sub{grid-column:2;font-size:12px;color:var(--muted)}
-.lbl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
-.lbl table{width:100%;border-collapse:collapse;font-size:14px}
-.lbl th{font-size:12px;font-weight:500;color:var(--muted);text-align:right;padding:0 0 4px 6px;white-space:nowrap}
-.lbl th:first-child{text-align:left;padding-left:0}
-.lbl td{padding:3px 0 3px 6px}
-.lbl td:first-child{padding-left:0;white-space:nowrap;display:flex;align-items:center;gap:6px}
-.lbl td:first-child i{width:9px;height:9px;border-radius:50%;display:inline-block}
-.lbl td input,.lbl .inl input,.lbl .inl select{width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);text-align:right;font-size:16px}
-.lbl .inl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
-.lbl .inl{column-gap:16px}
-.lbl .pr{display:flex;gap:6px;align-items:center;white-space:nowrap}
-.lbl .inl input{width:72px}
-.lbl .inl select{width:auto;text-align:left}
-.lbl .res{font-size:15px}
-.lbl .res b{font-size:20px}
-.lbl label.ck{display:flex;gap:8px;align-items:center;font-size:14px}
-.lbl label.ck input{width:20px;height:20px;accent-color:var(--accent)}
+.nlbl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
+.nlbl table{width:100%;border-collapse:collapse;font-size:14px}
+.nlbl th{font-size:12px;font-weight:500;color:var(--muted);text-align:right;padding:0 0 4px 6px;white-space:nowrap}
+.nlbl th:first-child{text-align:left;padding-left:0}
+.nlbl td{padding:3px 0 3px 6px}
+.nlbl td:first-child{padding-left:0;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.nlbl td:first-child i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.nlbl td input,.nlbl .inl input,.nlbl .inl select{width:100%;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);text-align:right;font-size:16px}
+.nlbl .inl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+.nlbl .inl{column-gap:16px}
+.nlbl .pr{display:flex;gap:6px;align-items:center;white-space:nowrap}
+.nlbl .inl input{width:72px}
+.nlbl .inl select{width:auto;text-align:left}
+.nlbl .res{font-size:15px}
+.nlbl .res b{font-size:20px}
+.nlbl label.ck{display:flex;gap:8px;align-items:center;font-size:14px}
+.nlbl label.ck input{width:20px;height:20px;accent-color:var(--accent)}
 .note{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:8px 12px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
 .actions .field{flex:1 1 120px}
@@ -290,6 +291,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
       <div class="mrow"><div class="h"><b>蛋白質</b><span class="num" id="pTxt"></span></div><div class="bar"><i id="pBar" style="background:var(--pro)"></i></div></div>
       <div class="mrow"><div class="h"><b>碳水</b><span class="num" id="cTxt"></span></div><div class="bar"><i id="cBar" style="background:var(--carb)"></i></div></div>
       <div class="mrow"><div class="h"><b>脂肪</b><span class="num" id="fTxt"></span></div><div class="bar"><i id="fBar" style="background:var(--fat)"></i></div></div>
+      <div class="mrow"><div class="h"><b>膳食纖維</b><span class="num" id="fbTxt"></span></div><div class="bar"><i id="fbBar" style="background:var(--fib)"></i></div></div>
     </div>
   </div>
 
@@ -387,10 +389,11 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
       <input type="file" id="mPhotoIn" accept="image/*" hidden>
     </div>
     <div class="grid4">
-      <div class="field"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
+      <div class="field full"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
       <div class="field"><label for="mP">蛋白質 g</label><input id="mP" type="number" inputmode="decimal" min="0" step="0.1"></div>
       <div class="field"><label for="mC">碳水 g</label><input id="mC" type="number" inputmode="decimal" min="0" step="0.1"></div>
       <div class="field"><label for="mF">脂肪 g</label><input id="mF" type="number" inputmode="decimal" min="0" step="0.1"></div>
+      <div class="field"><label for="mFb">膳食纖維 g</label><input id="mFb" type="number" inputmode="decimal" min="0" step="0.1"></div>
     </div>
     <label class="check" for="mSaveMy"><input type="checkbox" id="mSaveMy">存到「我的食物」，下次可以直接選（含照片）</label>
     <div class="actions">
@@ -405,10 +408,11 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
   <div class="sh"><h3>每日目標</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
   <details class="fold" id="goalBreakWrap" hidden><summary>查看計算過程</summary><div class="breakdown" id="goalBreak"></div></details>
   <div class="grid4">
-    <div class="field"><label for="gK">熱量 kcal</label><input id="gK" type="number" min="800"></div>
+    <div class="field full"><label for="gK">熱量 kcal</label><input id="gK" type="number" min="800"></div>
     <div class="field"><label for="gP">蛋白質 g</label><input id="gP" type="number" min="0"></div>
     <div class="field"><label for="gC">碳水 g</label><input id="gC" type="number" min="0"></div>
     <div class="field"><label for="gF">脂肪 g</label><input id="gF" type="number" min="0"></div>
+    <div class="field"><label for="gFb">膳食纖維 g</label><input id="gFb" type="number" min="0"></div>
   </div>
   <div class="note">不確定要設多少？填下面的資料，用 Mifflin-St Jeor 公式估算每日消耗（TDEE），再依目標調整。</div>
   <div class="grid2">
@@ -484,7 +488,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 "use strict";
 const MEALS=[["b","早餐"],["l","午餐"],["d","晚餐"],["s","點心"]];
 /* food list from foods.js: one typical serving per entry, scaled by the chosen amount */
-const FOODS=(window.SHIKE_FOODS||[]).map(a=>({n:a[0],cat:a[1],b:a[2],sl:a[3],sa:a[4],k:a[5],p:a[6],c:a[7],f:a[8]}));
+const FOODS=(window.SHIKE_FOODS||[]).map(a=>({n:a[0],cat:a[1],b:a[2],sl:a[3],sa:a[4],k:a[5],p:a[6],c:a[7],f:a[8],fb:a[9]||0}));
 const UNITS={g:[["g",1,"g"],["oz",28.35,"oz（28.35 g）"],["台兩",37.5,"台兩（37.5 g）"]],
              ml:[["ml",1,"ml"],["cc",1,"cc"],["fl oz",29.57,"fl oz（29.57 ml）"],["量杯",240,"量杯（240 ml）"]]};
 const GENERIC_UNITS=["份","個","碗","杯","盤","片","顆","條","匙","g","oz","ml","cc","fl oz"];
@@ -507,7 +511,7 @@ const CFG="shike:cfg", CACHE="shike:cache";
 let cfg=Object.assign({owner:"",repo:"shike-data",token:"",dsKey:"",dsModel:"deepseek-flash"},lsGet(CFG,{}));
 const cache=Object.assign({days:{},activity:{},profile:null,shas:{},dirtyMonths:[],dirtyProfile:false,pendingPhotos:[],myfoods:[],dirtyMy:false,del:{},healthSeen:{}},lsGet(CACHE,{}));
 const state={date:keyOf(new Date())};
-const defaultProfile={goal:{kcal:1800,p:110,c:200,f:60},body:{}};
+const defaultProfile={goal:{kcal:1800,p:110,c:200,f:60,fb:25},body:{}};
 const profile=()=>cache.profile||defaultProfile;
 const saveCache=()=>lsSet(CACHE,cache);
 const ghReady=()=>!!(cfg.owner&&cfg.repo&&cfg.token);
@@ -752,7 +756,7 @@ const myList=()=>cache.myfoods.filter(f=>!f.deleted).sort((a,b)=>(b.t||0)-(a.t||
 function saveMy(v){
   const same=cache.myfoods.find(f=>!f.deleted&&f.name===v.name);
   /* entries without an amount (e.g. from AI) count as 1 份 so later amounts scale from it */
-  const entry={id:same?same.id:uid(),name:v.name,kcal:v.kcal,p:v.p,c:v.c,f:v.f,portion:v.portion||"",q:v.q||1,u:v.q?v.u:"份",fn:v.fn||null,photo:v.photo||null,t:Date.now()};
+  const entry={id:same?same.id:uid(),name:v.name,kcal:v.kcal,p:v.p,c:v.c,f:v.f,fb:v.fb||0,portion:v.portion||"",q:v.q||1,u:v.q?v.u:"份",fn:v.fn||null,photo:v.photo||null,t:Date.now()};
   cache.myfoods=cache.myfoods.filter(f=>f.id!==entry.id).concat(entry);
   cache.dirtyMy=true; saveCache(); sync();
 }
@@ -774,8 +778,8 @@ window.addEventListener("focus",refreshFromGitHub);
 window.addEventListener("pageshow",e=>{if(e.persisted)refreshFromGitHub()});
 
 /* ---------- DeepSeek ---------- */
-const FORMAT=`只回覆 JSON，格式：{"items":[{"name":"滷肉飯","portion":"1 小碗 約 200g","kcal":420,"protein":13,"carbs":55,"fat":16}],"note":"一句話說明估算依據或需要注意的地方"}
-規則：name 用台灣常用的繁體中文名稱；每一樣可分辨的食物或飲料各一筆；kcal 為整數，protein/carbs/fat 為公克（可一位小數）；份量依常見台灣份量估計。`;
+const FORMAT=`只回覆 JSON，格式：{"items":[{"name":"滷肉飯","portion":"1 小碗 約 200g","kcal":420,"protein":13,"carbs":55,"fat":16,"fiber":1.2}],"note":"一句話說明估算依據或需要注意的地方"}
+規則：name 用台灣常用的繁體中文名稱；每一樣可分辨的食物或飲料各一筆；kcal 為整數，protein/carbs/fat/fiber 為公克（可一位小數），fiber 是膳食纖維；份量依常見台灣份量估計。`;
 function parseJSON(t){
   t=String(t||"").trim();
   try{return JSON.parse(t)}catch(e){}
@@ -809,7 +813,7 @@ function dsErr(e){
 function normalize(r){
   const arr=r&&Array.isArray(r.items)?r.items:[];
   return {note:r&&typeof r.note==="string"?r.note:"",items:arr.map(x=>({name:String(x.name||"食物").slice(0,40),portion:String(x.portion||"").slice(0,40),
-    kcal:Math.max(0,Math.round(Number(x.kcal)||0)),p:r1(x.protein),c:r1(x.carbs),f:r1(x.fat)}))};
+    kcal:Math.max(0,Math.round(Number(x.kcal)||0)),p:r1(x.protein),c:r1(x.carbs),f:r1(x.fat),fb:r1(x.fiber)}))};
 }
 async function shrinkToDataUrl(file){
   const url=URL.createObjectURL(file);
@@ -823,16 +827,18 @@ async function shrinkToDataUrl(file){
 }
 
 /* ---------- render ---------- */
-/* "portion · ●5g ●62g ●0.5g", dots colored like the protein / carb / fat bars */
-function macroLine(el,portion,p,c,f){
+/* "portion · ●5g ●62g ●0.5g ●3g", dots colored like the protein / carb / fat / fiber bars;
+   fiber only shows when there is some (older entries never recorded it) */
+function macroLine(el,portion,p,c,f,fb){
   el.textContent=portion?portion+" · ":"";
-  for(const [v,col,name] of [[p,"--pro","蛋白質"],[c,"--carb","碳水"],[f,"--fat","脂肪"]]){
+  for(const [v,col,name] of [[p,"--pro","蛋白質"],[c,"--carb","碳水"],[f,"--fat","脂肪"],[fb,"--fib","膳食纖維"]]){
+    if(name==="膳食纖維"&&!(r1(v)>0))continue;
     const s=document.createElement("span"); s.className="mc"; s.title=name; s.setAttribute("aria-label",name+" "+r1(v)+" 公克");
     const d=document.createElement("i"); d.style.background=`var(${col})`;
     s.append(d,r1(v)+"g"); el.append(s);
   }
 }
-function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i.p||0),c:a.c+(+i.c||0),f:a.f+(+i.f||0)}),{k:0,p:0,c:0,f:0})}
+function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i.p||0),c:a.c+(+i.c||0),f:a.f+(+i.f||0),fb:a.fb+(+i.fb||0)}),{k:0,p:0,c:0,f:0,fb:0})}
 /* base goal plus the counted share of that day's active energy, split across
    protein / carbs / fat in the same calorie proportions as the base goal */
 /* 熱量估算方式: "lazy" = fixed TDEE from the chosen activity level;
@@ -840,13 +846,13 @@ function totals(items){return items.reduce((a,i)=>({k:a.k+(+i.kcal||0),p:a.p+(+i
    Profiles saved before the mode existed only have dyn.on */
 const isPrecise=(dyn=profile().dyn||{})=>dyn.mode?dyn.mode==="precise":!!dyn.on;
 function goalFor(k){
-  const g=profile().goal, dyn=profile().dyn||{}, a=cache.activity[k];
+  const g=profile().goal, dyn=profile().dyn||{}, a=cache.activity[k], fb=g.fb!=null?g.fb:25;
   let extra=0;
   if(isPrecise(dyn)&&a&&a.active>0) extra=Math.round(a.active*(dyn.ratio||0.75));
-  if(!extra)return {kcal:g.kcal,p:g.p,c:g.c,f:g.f,extra:0};
+  if(!extra)return {kcal:g.kcal,p:g.p,c:g.c,f:g.f,fb,extra:0};
   const pk=g.p*4, ck=g.c*4, fk=g.f*9, sum=pk+ck+fk;
   const [sp,sc,sf]=sum>0?[pk/sum,ck/sum,fk/sum]:[0.25,0.5,0.25];
-  return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),extra};
+  return {kcal:g.kcal+extra,p:g.p+Math.round(extra*sp/4),c:g.c+Math.round(extra*sc/4),f:g.f+Math.round(extra*sf/9),fb,extra};
 }
 /* daily energy burn for the 7-day chart: the calculator's TDEE; in 精打細算
    that TDEE is sedentary, so add the full active energy on logged days */
@@ -880,7 +886,7 @@ function render(){
   const C=2*Math.PI*52, frac=Math.min(1,t.k/(g.kcal||1));
   const arc=$("ringArc"); arc.setAttribute("stroke-dasharray",(frac*C)+" "+C); arc.setAttribute("stroke",over?"var(--warn)":"var(--accent)");
   $("eaten").textContent=Math.round(t.k); $("goalK").textContent=g.kcal;
-  for(const [m,v,gv] of [["p",t.p,g.p],["c",t.c,g.c],["f",t.f,g.f]]){
+  for(const [m,v,gv] of [["p",t.p,g.p],["c",t.c,g.c],["f",t.f,g.f],["fb",t.fb,g.fb]]){
     $(m+"Txt").textContent=Math.round(v)+" / "+gv+" g";
     $(m+"Bar").style.width=Math.min(100,v/(gv||1)*100)+"%";
   }
@@ -908,7 +914,7 @@ function render(){
         const nm=li.querySelector(".nm div");
         nm.textContent=it.name;
         if(it.src&&it.src!=="manual"){const tg=document.createElement("span");tg.className="tag";tg.textContent=it.src==="photo"?"拍照 AI":it.src==="label"?"標示 AI":"AI";nm.append(tg)}
-        macroLine(li.querySelector(".sub"),it.portion,it.p,it.c,it.f);
+        macroLine(li.querySelector(".sub"),it.portion,it.p,it.c,it.f,it.fb);
         li.children[1].textContent=Math.round(it.kcal);
         li.querySelector(".del").onclick=()=>removeItem(it.id);
         if(it.photo){
@@ -955,7 +961,7 @@ function renderWeek(){
 /* ---------- mutations ---------- */
 function addItems(list,meal,src){
   const k=state.date; const arr=(cache.days[k]||[]).slice();
-  for(const x of list) arr.push(Object.assign({id:uid(),meal,src,name:x.name,portion:x.portion||"",kcal:Math.round(+x.kcal||0),p:r1(x.p),c:r1(x.c),f:r1(x.f),t:Date.now()},
+  for(const x of list) arr.push(Object.assign({id:uid(),meal,src,name:x.name,portion:x.portion||"",kcal:Math.round(+x.kcal||0),p:r1(x.p),c:r1(x.c),f:r1(x.f),fb:r1(x.fb),t:Date.now()},
     x.q?{q:x.q,u:x.u}:{}, x.fn?{fn:x.fn}:{}, x.photo?{photo:x.photo}:{}));
   cache.days[k]=arr; render(); markDay(k);
   toast(`已加入 ${list.length} 項到${MEALS.find(m=>m[0]===meal)[1]}`);
@@ -1001,10 +1007,10 @@ function showCands(target,res,src){
     const cb=c.querySelector("[type=checkbox]"),nm=c.querySelector(".nm"),kc=c.querySelector(".kc"),mul=c.querySelector("select");
     nm.value=x.name; kc.value=x.kcal;
     const sub=c.querySelector(".sub");
-    const upd=()=>{const m=+mul.value;macroLine(sub,x.portion,x.p*m,x.c*m,x.f*m)};
+    const upd=()=>{const m=+mul.value;macroLine(sub,x.portion,x.p*m,x.c*m,x.f*m,x.fb*m)};
     mul.onchange=()=>{kc.value=Math.round(x.kcal*mul.value);upd()}; upd();
     c._get=()=>{if(!cb.checked)return null;const m=+mul.value;const k=Math.max(0,+kc.value||0);const ratio=x.kcal?k/(x.kcal*m):1;
-      return{name:nm.value.trim()||x.name,portion:x.portion+(m!==1?` ×${m}`:""),kcal:k,p:x.p*m*ratio,c:x.c*m*ratio,f:x.f*m*ratio}};
+      return{name:nm.value.trim()||x.name,portion:x.portion+(m!==1?` ×${m}`:""),kcal:k,p:x.p*m*ratio,c:x.c*m*ratio,f:x.f*m*ratio,fb:x.fb*m*ratio}};
     wrap.append(c);
   });
   target.append(wrap);
@@ -1090,8 +1096,8 @@ $("labelIn").onchange=async e=>{
     let dataUrl;
     try{dataUrl=await shrinkToDataUrl(f)}catch(e){throw {code:"img"}}
     const r=await askDeepSeek(`這是一張食品包裝上的「營養標示」照片。請只照標示上印的數字讀出來，不要自己估算。
-只回覆 JSON，格式：{"name":"產品名稱，看得到才填，否則空字串","unit":"g 或 ml","serving_size":30,"servings":5,"per_serving":{"kcal":150,"protein":2.1,"carbs":20.5,"fat":6.8},"per_100":{"kcal":500,"protein":7,"carbs":68.3,"fat":22.7},"note":"一句話說明"}
-規則：serving_size 是「每一份量」的公克或毫升數；servings 是「本包裝含幾份」；per_serving 是「每份」那一欄，per_100 是「每100公克／每100毫升」那一欄，標示上沒有的欄位填 null，看不清楚的數字也填 null；kcal 用「熱量（大卡）」，若只有大卡以外單位請換算成大卡；carbs 用「碳水化合物」總量；protein/carbs/fat 為公克。若照片不是營養標示，per_serving 和 per_100 都填 null 並在 note 說明。`,dataUrl,labelCtl.signal);
+只回覆 JSON，格式：{"name":"產品名稱，看得到才填，否則空字串","unit":"g 或 ml","serving_size":30,"servings":5,"per_serving":{"kcal":150,"protein":2.1,"carbs":20.5,"fat":6.8,"fiber":1.5},"per_100":{"kcal":500,"protein":7,"carbs":68.3,"fat":22.7,"fiber":5},"note":"一句話說明"}
+規則：serving_size 是「每一份量」的公克或毫升數；servings 是「本包裝含幾份」；per_serving 是「每份」那一欄，per_100 是「每100公克／每100毫升」那一欄，標示上沒有的欄位填 null，看不清楚的數字也填 null；kcal 用「熱量（大卡）」，若只有大卡以外單位請換算成大卡；carbs 用「碳水化合物」總量；fiber 用「膳食纖維」，標示上沒有就填 null；protein/carbs/fat/fiber 為公克。若照片不是營養標示，per_serving 和 per_100 都填 null 並在 note 說明。`,dataUrl,labelCtl.signal);
     setStatus($("textStatus"),""); showLabel($("textResult"),normLabel(r));
   }catch(e){
     if(e&&e.code==="cancelled")setStatus($("textStatus"),"");
@@ -1101,7 +1107,7 @@ $("labelIn").onchange=async e=>{
 function normLabel(r){
   r=r||{};
   const n=v=>{if(v==null||v==="")return null;const x=Number(String(v).replace(/[^\d.]/g,""));return isFinite(x)&&String(v).match(/\d/)?x:null};
-  const blk=o=>{if(!o||typeof o!=="object")return null;const b={k:n(o.kcal),p:n(o.protein),c:n(o.carbs),f:n(o.fat)};return b.k==null&&b.p==null&&b.c==null&&b.f==null?null:b};
+  const blk=o=>{if(!o||typeof o!=="object")return null;const b={k:n(o.kcal),p:n(o.protein),c:n(o.carbs),f:n(o.fat),fb:n(o.fiber)};return b.k==null&&b.p==null&&b.c==null&&b.f==null?null:b};
   const unit=/ml|毫升|cc/i.test(String(r.unit||""))?"ml":"g";
   return {name:String(r.name||"").slice(0,40),unit,size:n(r.serving_size),servings:n(r.servings),ps:blk(r.per_serving),p100:blk(r.per_100),note:typeof r.note==="string"?r.note:""};
 }
@@ -1109,9 +1115,9 @@ function showLabel(target,L){
   target.textContent="";
   if(L.note){const n=document.createElement("div");n.className="note";n.textContent=L.note;target.append(n)}
   if(!L.ps&&!L.p100){const e=document.createElement("div");e.className="status";e.textContent="沒有讀到營養標示的數字，請把整張表格拍清楚、避免反光再試一次。";target.append(e);return}
-  const u=L.unit, box=document.createElement("div"); box.className="lbl"; box.style.marginTop="8px";
+  const u=L.unit, box=document.createElement("div"); box.className="nlbl"; box.style.marginTop="8px";
   const v=x=>x==null?"":String(r1(x));
-  const rows=[["k","熱量","kcal",""],["p","蛋白質","g","--pro"],["c","碳水","g","--carb"],["f","脂肪","g","--fat"]];
+  const rows=[["k","熱量","kcal",""],["p","蛋白質","g","--pro"],["c","碳水","g","--carb"],["f","脂肪","g","--fat"],["fb","膳食纖維","g","--fib"]];
   box.innerHTML=`<div class="hint">AI 讀到的標示數字，請和包裝核對，讀錯可以直接改</div>
     <div class="field"><label for="lbName">食物名稱</label><input id="lbName" placeholder="例如：○○洋芋片"></div>
     <div class="inl"><span class="pr">每一份量 <input data-k="size" type="number" inputmode="decimal" min="0" step="any" aria-label="每一份量"> ${u}</span><span class="pr">本包裝含 <input data-k="servings" type="number" inputmode="decimal" min="0" step="any" aria-label="本包裝份數"> 份</span></div>
@@ -1131,7 +1137,7 @@ function showLabel(target,L){
       if(!b.k&&(b.p||b.c||b.f))b.k=b.p*4+b.c*4+b.f*9;return b};
     return {size:num("size"),n:num("servings"),ps:blk("ps"),p100:blk("p100")};
   };
-  const scale=(b,m)=>({k:b.k*m,p:b.p*m,c:b.c*m,f:b.f*m});
+  const scale=(b,m)=>({k:b.k*m,p:b.p*m,c:b.c*m,f:b.f*m,fb:b.fb*m});
   /* values for one serving and for one g/ml, from whichever column is filled */
   const basis=d=>({serv:d.ps||(d.p100&&d.size?scale(d.p100,d.size/100):null),gram:d.p100?scale(d.p100,1/100):d.ps&&d.size?scale(d.ps,1/d.size):null});
   const qtyEl=box.querySelector("#lbQty"), unitEl=box.querySelector("#lbUnit");
@@ -1151,10 +1157,10 @@ function showLabel(target,L){
     if(m==="serv"&&b.serv){out=scale(b.serv,q);portion=`${fmtQ(q)} 份`+(d.size?`（${fmtQ(q*d.size)} ${u}）`:"")}
     else if(m==="gram"&&b.gram){out=scale(b.gram,q);portion=`${fmtQ(q)} ${u}`;uu=u}
     else if(m==="pack"&&b.serv&&d.n){out=scale(b.serv,q*d.n);portion=`${fmtQ(q)} 包（${fmtQ(q*d.n)} 份）`;qq=q*d.n}
-    return out&&{kcal:Math.round(out.k),p:out.p,c:out.c,f:out.f,portion,q:qq,u:uu};
+    return out&&{kcal:Math.round(out.k),p:out.p,c:out.c,f:out.f,fb:out.fb,portion,q:qq,u:uu};
   };
   const show_=()=>{const x=calc();box.querySelector("#lbRes").innerHTML=x?`約 <b class="num">${x.kcal}</b> kcal`:"請填入標示上的數字";
-    const sub=box.querySelector("#lbSub");sub.textContent="";if(x)macroLine(sub,x.portion,x.p,x.c,x.f)};
+    const sub=box.querySelector("#lbSub");sub.textContent="";if(x)macroLine(sub,x.portion,x.p,x.c,x.f,x.fb)};
   /* switching unit keeps the same amount when the serving weight is known */
   unitEl.onchange=()=>{
     const d=read(), q=+qtyEl.value||0, toG={serv:d.size,gram:1,pack:d.size&&d.n?d.size*d.n:null};
@@ -1171,7 +1177,7 @@ function showLabel(target,L){
   act.querySelector("button").onclick=()=>{
     const x=calc(); if(!x||!(x.q>0)){toast("請填入吃了多少");return}
     const name=box.querySelector("#lbName").value.trim()||"包裝食品";
-    const it={name,portion:x.portion,kcal:x.kcal,p:r1(x.p),c:r1(x.c),f:r1(x.f),q:x.q,u:x.u};
+    const it={name,portion:x.portion,kcal:x.kcal,p:r1(x.p),c:r1(x.c),f:r1(x.f),fb:r1(x.fb),q:x.q,u:x.u};
     if(box.querySelector("#lbMy").checked)saveMy(it);
     addItems([it],act.querySelector("select").value,"label");hide();resetEstimate("text");
   };
@@ -1179,7 +1185,7 @@ function showLabel(target,L){
 }
 
 /* manual */
-function fill(n,k,p,c,f){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f}
+function fill(n,k,p,c,f,fb){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mFb").value=r1(fb)}
 function chip(label,k,onclick){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;const s=document.createElement("span");s.textContent=k;b.append(s);b.onclick=onclick;return b}
 const fmtQ=q=>String(q>=10?Math.round(q):r1(q));
 let editingId=null, selFood=null, units=[], unitIdx=0, fCat="全部";
@@ -1198,11 +1204,11 @@ function recalc(){
   if(selMy&&selMy.q>0){
     const su=units.find(x=>x.lab===selMy.u);
     const r=u.lab===selMy.u?q/selMy.q:(su&&su.base&&u.base)?(q*u.base)/(selMy.q*su.base):null;
-    if(r!=null){fill($("mName").value||selMy.name,Math.round(selMy.kcal*r),r1(selMy.p*r),r1(selMy.c*r),r1(selMy.f*r));return}
+    if(r!=null){fill($("mName").value||selMy.name,Math.round(selMy.kcal*r),r1(selMy.p*r),r1(selMy.c*r),r1(selMy.f*r),(selMy.fb||0)*r);return}
   }
   if(!selFood)return;
   const r=q*u.base/selFood.sa;
-  fill($("mName").value||selFood.n,Math.round(selFood.k*r),r1(selFood.p*r),r1(selFood.c*r),r1(selFood.f*r));
+  fill($("mName").value||selFood.n,Math.round(selFood.k*r),r1(selFood.p*r),r1(selFood.c*r),r1(selFood.f*r),selFood.fb*r);
 }
 function pickFood(f,q,lab){
   selFood=f; selMy=null; $("mName").value=f.n; fillUnits(lab||f.sl); $("mQty").value=q||1; recalc();
@@ -1283,7 +1289,7 @@ function useMy(f){
   const db=f.fn&&findFood(f.fn);
   if(db) pickFood(db,f.q,f.u); else {clearFood(f.u||"份"); $("mQty").value=f.q?fmtQ(f.q):""}
   selMy=f;
-  fill(f.name,f.kcal,r1(f.p),r1(f.c),r1(f.f));
+  fill(f.name,f.kcal,r1(f.p),r1(f.c),r1(f.f),f.fb);
   setMPhoto(f.photo||null);
   $("mSaveMy").checked=false;   /* already saved; checking it again would replace the saved amount */
   $("mCalcHint").hidden=false; $("mCalcHint").textContent="已帶入「我的食物」，改數量會依比例換算。";
@@ -1303,7 +1309,7 @@ function openEdit(id){
   if(f){selFood=f;$("fPicked").hidden=false;$("fPickedName").textContent=f.n;fillUnits(it.u);$("mCalcHint").hidden=false;$("mCalcHint").textContent="改數量或單位會重新換算熱量。"}
   else{clearFood(it.u); if(!it.q&&it.portion){$("mCalcHint").hidden=false;$("mCalcHint").textContent="原本份量：「"+it.portion+"」，可以改用數量和單位重新選。"}}
   $("mQty").value=it.q?fmtQ(it.q):"";
-  fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f));
+  fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f),it.fb);
   setMPhoto(it.photo||null);
   $("mSaveMy").checked=myList().some(f=>f.name===it.name);
   show("sheetManual");
@@ -1351,8 +1357,8 @@ $("addManual").onclick=()=>{
   const rc=$("recentChips"); rc.textContent="";
   seen.forEach(i=>rc.append(chip(i.name,Math.round(i.kcal),()=>{
     const f=i.fn&&findFood(i.fn);
-    if(f){pickFood(f,i.q,i.u);fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f))}
-    else{clearFood(i.u);$("mQty").value=i.q?fmtQ(i.q):"";fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f))}
+    if(f){pickFood(f,i.q,i.u);fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb)}
+    else{clearFood(i.u);$("mQty").value=i.q?fmtQ(i.q):"";fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb)}
   })));
   $("recentWrap").hidden=!seen.size;
   myManaging=false; renderMy();
@@ -1364,7 +1370,7 @@ function clampRows(box,n){const tops=[];[...box.children].forEach(c=>{const t=c.
 $("manualForm").addEventListener("submit",e=>{e.preventDefault();
   const q=+$("mQty").value, u=units[+$("mUnit").value];
   const old=editingId&&(cache.days[state.date]||[]).find(x=>x.id===editingId);
-  const v={name:$("mName").value.trim(),kcal:Math.round(+$("mK").value||0),p:r1($("mP").value),c:r1($("mC").value),f:r1($("mF").value),
+  const v={name:$("mName").value.trim(),kcal:Math.round(+$("mK").value||0),p:r1($("mP").value),c:r1($("mC").value),f:r1($("mF").value),fb:r1($("mFb").value),
     portion:q>0&&u?fmtQ(q)+" "+u.lab:(old?old.portion||"":""),q:q>0?q:null,u:q>0&&u?u.lab:null,fn:selFood?selFood.n:null};
   if(mPh.file){const pid=newPhotoId(state.date), f=mPh.file;v.photo=pid;shrinkBlob(f).then(b=>b&&savePhoto(pid,b)).catch(()=>toast("照片處理失敗，請換一張"))}
   else if(mPh.removed) v.photo=null;
@@ -1418,7 +1424,7 @@ addEventListener("pagehide",()=>stopMic(true));
 
 /* goal */
 $("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{};
-  $("gK").value=g.kcal;$("gP").value=g.p;$("gC").value=g.c;$("gF").value=g.f;
+  $("gK").value=g.kcal;$("gP").value=g.p;$("gC").value=g.c;$("gF").value=g.f;$("gFb").value=g.fb!=null?g.fb:25;
   if(b.sex)$("bSex").value=b.sex; $("bAge").value=b.age||""; $("bH").value=b.h||""; $("bW").value=b.w||""; $("bBf").value=b.bf||""; showLbm();
   if(b.act)$("bAct").value=b.act; if(b.goal!=null)$("bGoal").value=b.goal; $("calcOut").textContent="";
   const dyn=profile().dyn||{}; $(isPrecise(dyn)?"gModePrecise":"gModeLazy").checked=true; $("gRatio").value=String(dyn.ratio||0.75); syncActSel(); renderBreak(); show("sheetGoal")};
@@ -1484,6 +1490,8 @@ $("calcGo").onclick=()=>{
   const p=lbm?Math.round(lbm*(adj<0?2.2:2.0)):Math.round(w*(adj<0?1.8:1.6));
   const f=Math.round(kcal*0.27/9), c=Math.max(0,Math.round((kcal-p*4-f*9)/4));
   $("gK").value=kcal;$("gP").value=p;$("gC").value=c;$("gF").value=f;
+  /* fiber: about 14 g per 1000 kcal, kept within the 25–35 g adult recommendation */
+  $("gFb").value=Math.min(35,Math.max(25,Math.round(kcal*14/1000)));
   $("calcOut").textContent=(lbm?`依體脂率計算：去脂體重約 ${r1(lbm)} kg，`:"")+`基礎代謝約 ${Math.round(bmr)} kcal，${dynOn?"久坐時":""}每日消耗約 ${tdee} kcal。`
     +(lbm?`蛋白質依去脂體重每公斤 ${adj<0?2.2:2.0} g 計算。`:"")+`已套用為每日目標 ${kcal} kcal${dynOn?"，活動消耗會每天另外加上去":""}。`;
   lastCalc={bmr:Math.round(bmr),tdee,factor:act,sel:+$("bAct").value,adj,kcal,formula:lbm?"Katch-McArdle（去脂體重）":"Mifflin-St Jeor",lbm:lbm?r1(lbm):null};
@@ -1491,7 +1499,7 @@ $("calcGo").onclick=()=>{
   $("gK").scrollIntoView({block:"center",behavior:"smooth"});
 };
 function saveGoal(){
-  const goal={kcal:Math.max(800,+$("gK").value||1800),p:+$("gP").value||0,c:+$("gC").value||0,f:+$("gF").value||0};
+  const goal={kcal:Math.max(800,+$("gK").value||1800),p:+$("gP").value||0,c:+$("gC").value||0,f:+$("gF").value||0,fb:+$("gFb").value||0};
   /* keep the last calculation; the breakdown notes when the goal was changed by hand afterwards */
   const calc=lastCalc||profile().calc||null;
   cache.profile={goal,calc,

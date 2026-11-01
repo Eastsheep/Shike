@@ -9,7 +9,7 @@
 | 檔案 | 用途 |
 |---|---|
 | `index.html` | 整個 App（HTML + CSS + JS 都在裡面，無建置步驟、無框架） |
-| `foods.js` | 台灣常見食物清單 `window.SHIKE_FOODS`，每筆 `[名稱, 類別, "g"/"ml", 份量名稱, 份量g或ml, kcal, 蛋白質, 碳水, 脂肪]`，數值是「一份」的值 |
+| `foods.js` | 台灣常見食物清單 `window.SHIKE_FOODS`，每筆 `[名稱, 類別, "g"/"ml", 份量名稱, 份量g或ml, kcal, 蛋白質, 碳水, 脂肪, 膳食纖維]`，數值是「一份」的值 |
 | `manifest.webmanifest`, `icon.svg`, `icon-*.png` | 加入主畫面用（iOS 不吃 SVG 圖示，所以 apple-touch-icon 用 `icon-180.png`） |
 | `splash/` | iOS 加到主畫面後的原生啟動畫面，`寬x高.png`，各 iPhone 尺寸一張（品牌綠底，不分深淺色），版面和 App 內的 `#splash` 一樣 |
 | `README.md` | 給使用者看的設定步驟（含 iOS 捷徑步驟） |
@@ -20,15 +20,15 @@
 
 - 紀錄存在使用者的**私人** repo（例如 `shike-data`），用 GitHub Contents API 讀寫，token 是 fine-grained PAT（只開該 repo 的 Contents 讀寫）。
   - `data/YYYY-MM.json`：`{days:{"YYYY-MM-DD":[item...]}, activity:{"YYYY-MM-DD":{active,steps,src,t}}}`
-  - `profile.json`：`{goal:{kcal,p,c,f}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,mode,ratio}}`（`mode` 為 `lazy`/`precise`；舊資料只有 `on`，`on:true` 視為精打細算）
+  - `profile.json`：`{goal:{kcal,p,c,f,fb}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,mode,ratio}}`（`mode` 為 `lazy`/`precise`；舊資料只有 `on`，`on:true` 視為精打細算）
 - 本機快取在 localStorage `shike:cache`，設定（GitHub 帳號/repo/token、DeepSeek key/model）在 `shike:cfg`。token 和 key 只存在瀏覽器，絕不寫進 repo。
-- 食物 item：`{id,meal(b/l/d/s),src(photo/text/label/manual),name,portion,kcal,p,c,f,t, q?,u?,fn?}`；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
+- 食物 item：`{id,meal(b/l/d/s),src(photo/text/label/manual),name,portion,kcal,p,c,f,fb,t, q?,u?,fn?}`；`fb` 是膳食纖維（g），舊資料沒有就當 0；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
 - 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`）。
 - 食物以 item 為單位合併（`mergeDays`）：本頁沒有未上傳修改時直接用遠端；有的話依 id 聯集、`mt||t` 較新者勝、刪除記在月檔 `del:{id:{k,t}}`（保留 60 天），讓舊頁面不能把刪掉的東西帶回來、也不會覆蓋別頁新增的項目。頁面回到前景／取得焦點／bfcache 還原時會重新拉資料（`refreshFromGitHub`，5 秒節流）。
 - 月檔格式：`{days, activity, del}`。
 - 健康數據新管道：捷徑直接 PUT `health/YYYY-MM-DD_yyyyMMddHHmmss.json`（內容 `{"d","a","s"}`，免 sha）。`pullHealth` 列出資料夾、每天取最新一檔套用（手動值較新則保留手動）、清掉舊檔；`healthSeen` 記錄已處理的時間。舊的 `#d=&a=&s=` 網址匯入仍保留。
 - 家人共用：同一個網址，各自在設定裡填不同的資料 repo 和 token。
-- 我的食物：資料 repo 的 `myfoods.json` = `{foods:[{id,name,kcal,p,c,f,portion,q,u,fn,photo,t}]}`，刪除留 `{id,deleted:true,t}` 墓碑，合併依 `t`（`mergeMy`）。同名存檔會覆蓋同一筆；沒有數量的（如 AI 結果）存成 1 份。從手動視窗頂端或搜尋結果帶入，照片沿用原 id 不重傳；帶入時「存到我的食物」預設不勾，避免改掉基準份量。
+- 我的食物：資料 repo 的 `myfoods.json` = `{foods:[{id,name,kcal,p,c,f,fb,portion,q,u,fn,photo,t}]}`，刪除留 `{id,deleted:true,t}` 墓碑，合併依 `t`（`mergeMy`）。同名存檔會覆蓋同一筆；沒有數量的（如 AI 結果）存成 1 份。從手動視窗頂端或搜尋結果帶入，照片沿用原 id 不重傳；帶入時「存到我的食物」預設不勾，避免改掉基準份量。
 - 照片：item 的 `photo` 是 id（`YYYY-MM/<uid>`），檔案在資料 repo `photos/<id>.jpg`（約 1080px、JPEG 0.75）。本機存在 IndexedDB `shike-photos`，待上傳清單在 `cache.pendingPhotos`，由 `sync()` 上傳；其他裝置用 `Accept: application/vnd.github.raw` 按需下載（失敗 60 秒內不重試）。AI 拍照估算加入時，同一張照片會掛在該次所有食物上。刪除食物不會刪 GitHub 上的照片檔。
 
 ## AI 估算
@@ -61,7 +61,8 @@
 - 開啟畫面 `#splash`：品牌綠底（#2C7650）＋白色 logo＋「食刻」，深淺色模式都一樣（使用者深色模式從主畫面開會閃，因為 iOS 不一定照深淺色挑啟動圖；綠底讓原生啟動圖和網頁開啟畫面永遠一致）。「食刻」是 SVG 字形外框（Noto Serif TC 900），第一格就出現。Google Fonts 的 CSS 改成不擋畫面（`media=print` onload 換回），開啟畫面會等它和字型載好。主畫面模式下 web view 在狀態列下方時，用 `screen.height-innerHeight` 把 logo 往上補正，對齊全螢幕的原生啟動圖。至少停留約 1.2 秒（使用者覺得一閃而過太快），首次畫面與字型還沒好就等到好（字型最多等 3 秒），再淡出 0.4 秒；JS 壞掉時 CSS 動畫 3.5 秒後也會自己藏起來。改 logo 或配色時要重產 `splash/*.png` 與 `icon-*.png`（用 Playwright 依 `#splash` 版面截圖）。
 
 - 手機優先單欄（max 560px），色彩全用 CSS 變數並支援深色模式；字體 Noto Serif TC（標題）、Noto Sans TC（內文）、IBM Plex Mono（數字）。
-- 三大營養素用彩色實心圓點表示（紅＝蛋白質、黃＝碳水、藍＝脂肪），不用 P/C/F 字母。
+- 三大營養素用彩色實心圓點表示（紅＝蛋白質、黃＝碳水、藍＝脂肪、綠 `--fib`＝膳食纖維），不用 P/C/F 字母。食物那行的纖維圓點只在有值時顯示。
+- 膳食纖維在首頁是第四條長條（使用者在「第四條長條」和「底下一行小字」兩案中選了前者）。目標預設 25 g，計算機以 14 g／1000 kcal 算、限制在 25～35 g；精打細算的活動加成不會加到纖維。AI 估算與營養標示都會讀 fiber。
 - 使用者試過在餐別／營養素前加圖示後要求移除，不要再加。
 - 手動加入：食物清單只在點搜尋框後出現，選完自動收起；份量用「數量＋單位」選單（g/oz/台兩、ml/cc/fl oz/量杯，加上該食物的常見份量），切換單位時保持同樣份量。
 
