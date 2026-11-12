@@ -1,7 +1,9 @@
 <!doctype html>
-<html lang="zh-Hant-TW">
+<html lang="zh-Hant-TW" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="zh-Hant-TW">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>食刻熱量日記</title>
 <meta name="color-scheme" content="light dark">
@@ -794,7 +796,7 @@ async function askDeepSeek(prompt,imageUrl,signal){
     r=await fetch("https://api.deepseek.com/chat/completions",{method:"POST",signal,
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+cfg.dsKey},
       body:JSON.stringify({model:cfg.dsModel||"deepseek-flash",temperature:0.2,stream:false,
-        messages:[{role:"system",content:"你是熟悉台灣飲食的營養師，只輸出 JSON，不要其他文字。"},{role:"user",content}]})});
+        messages:[{role:"system",content:"你是熟悉台灣飲食的營養師，只輸出 JSON，不要其他文字。JSON 裡所有文字（name、portion、note 等）一律使用台灣繁體中文與台灣用語，絕對不可使用簡體字。"},{role:"user",content}]})});
   }catch(e){ if(e&&e.name==="AbortError")throw {code:"cancelled"}; throw {code:"network"} }
   if(!r.ok){let detail="";try{detail=((await r.json()).error||{}).message||""}catch(e){} throw {code:"http",status:r.status,detail}}
   const j=await r.json();
