@@ -63,6 +63,7 @@
 
 - 開啟畫面 `#splash`：品牌綠底（#2C7650）＋白色 logo＋「食刻」，深淺色模式都一樣（使用者深色模式從主畫面開會閃，因為 iOS 不一定照深淺色挑啟動圖；綠底讓原生啟動圖和網頁開啟畫面永遠一致）。「食刻」是 SVG 字形外框（Noto Serif TC 900），第一格就出現。Google Fonts 的 CSS 改成不擋畫面（`media=print` onload 換回），開啟畫面會等它和字型載好。主畫面模式下 web view 在狀態列下方時，用 `screen.height-innerHeight` 把 logo 往上補正，對齊全螢幕的原生啟動圖。至少停留約 1.2 秒（使用者覺得一閃而過太快），首次畫面與字型還沒好就等到好（字型最多等 3 秒），再淡出 0.4 秒；JS 壞掉時 CSS 動畫 3.5 秒後也會自己藏起來。改 logo 或配色時要重產 `splash/*.png` 與 `icon-*.png`（用 Playwright 依 `#splash` 版面截圖）。
 
+- 全 App 不能選取文字、長按不跳 iOS 放大鏡／拷貝選單、點擊沒有灰底（`body` 上的 `user-select:none`／`-webkit-touch-callout:none`／`-webkit-tap-highlight-color`），只有輸入框可選取（使用者要「不要像文字被選取」）；點食物列也不要變色：`:hover` 效果只放在 `@media (hover:hover) and (pointer:fine)`（手機上 hover 點完會黏住），不用 `:active` 底色，點擊取得的 focus 不畫外框。
 - 手機優先單欄（max 560px），色彩全用 CSS 變數並支援深色模式；字體 Noto Serif TC（標題）、Noto Sans TC（內文與數字，數字用 `tabular-nums`、千分位 `fmtN`）。不再用等寬字體（使用者要介面更商業化）。
 - 2026-11 商業化改版：卡片不用框線、改淡陰影（`--shadow`）與 20px 圓角；首頁熱量環和四種營養素放在品牌綠主卡（`.hero`）；同步狀態是品牌名旁的小圓點（綠＝已同步、黃＝等待／同步中、紅＝失敗並顯示「同步失敗」、灰＝只在本機），點了會跳 toast 說明；食物那行不放 ×；刪除可在編輯視窗的「刪除這項」，或在首頁食物那行左滑（iOS 風格：短滑露出紅色「刪除」、滑超過約 55% 寬直接刪，`swipeRow`／`swipeDelete`，class 都用 `sw` 開頭；`touch-action:pan-y` 讓上下捲動照常，滑過或已打開時點一下只收回不開編輯），兩種都走 `removeItem` 的「已刪除…｜復原」toast；底部是浮動列：描述｜拍照記錄（主按鈕）｜手動；今天還沒記錄的正餐顯示「建議約 X kcal」（剩餘熱量平分給還沒過時間的正餐，點心不建議）；近 7 天超過目標 10% 以上才用紅色。
 - 日期：標題下是一週日期列（週日到週六，`renderStrip`），點日期切換，有食物紀錄打綠點、超過目標 10% 打紅點，未來的日子不能點；‹ › 和左右滑動換一週。
