@@ -248,6 +248,12 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .meal li .nm{min-width:0}
 .meal li .nm div{overflow-wrap:anywhere}
 .meal li .sub{font-size:12px;color:var(--muted)}
+.meal li.it{position:relative;overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;--sx:0px}
+.meal li.it>:not(.swdel){transform:translateX(var(--sx))}
+.meal li.it.swanim>:not(.swdel),.meal li.it.swanim>.swdel{transition:transform .22s ease,width .22s ease}
+.meal li.it .swdel{position:absolute;top:0;right:0;bottom:0;width:calc(-1 * var(--sx));min-width:0;overflow:hidden;border:0;border-radius:0;padding:0;background:var(--warn);color:#fff;font:600 14px var(--f-body);white-space:nowrap;display:flex;align-items:center;justify-content:center}
+.meal li.it.swgone{transition:height .2s ease,padding .2s ease,opacity .2s ease;opacity:0;padding-block:0}
+@media (prefers-reduced-motion:reduce){.meal li.it.swanim>*{transition:none}}
 .mc{display:inline-flex;align-items:center;gap:3px;margin-right:8px;white-space:nowrap}
 .mc i{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
 .tag{font-size:10px;font-weight:500;letter-spacing:.04em;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px;background:var(--accent-soft);color:var(--accent)}
@@ -1179,6 +1185,9 @@ function render(){
           photoURL(it.photo).then(u=>{if(u)im.src=u});
           li.prepend(im);
         } else li.prepend(monoTile(it.name));
+        const del=document.createElement("button"); del.type="button"; del.className="swdel"; del.textContent="刪除"; del.tabIndex=-1;
+        del.onclick=e=>{e.stopPropagation();swipeDelete(li,it.id)};
+        li.append(del); swipeRow(li,it.id);
         ul.append(li);
       }
       sec.append(ul);
@@ -1229,6 +1238,55 @@ function removeItem(id){
     const back=Object.assign({},it,{mt:Date.now()}); delete cache.del[id];
     const a=(cache.days[k]||[]).slice();a.splice(Math.min(idx,a.length),0,back);cache.days[k]=a;render();markDay(k)});
 }
+
+/* ---------- swipe a food row left to delete (iOS style) ----------
+   short swipe: reveal the red 刪除 button; long swipe (past ~55% width): delete right away.
+   vertical drags are left to the page (touch-action:pan-y), taps still open the editor. */
+const SW_OPEN=84;
+let swOpen=null;            /* the row currently showing its delete button */
+function swSet(li,x,anim){li.classList.toggle("swanim",!!anim);li.style.setProperty("--sx",x+"px")}
+function swClose(li){if(!li)return;swSet(li,0,true);if(swOpen===li)swOpen=null}
+function swipeDelete(li,id){
+  swOpen=null; swSet(li,-li.offsetWidth,true);
+  setTimeout(()=>{li.style.height=li.offsetHeight+"px";void li.offsetHeight;li.classList.add("swgone");li.style.height="0px"},180);
+  setTimeout(()=>removeItem(id),400);
+}
+function swipeRow(li,id){
+  let x0=0,y0=0,dx=0,base=0,mode=null,pid=null,moved=false;
+  li.addEventListener("pointerdown",e=>{
+    if(e.pointerType==="mouse"&&e.button!==0)return;
+    if(e.target.closest(".swdel"))return;
+    if(swOpen&&swOpen!==li)swClose(swOpen);
+    x0=e.clientX;y0=e.clientY;dx=0;mode=null;moved=false;pid=e.pointerId;
+    base=swOpen===li?-SW_OPEN:0;
+  });
+  li.addEventListener("pointermove",e=>{
+    if(e.pointerId!==pid)return;
+    const mx=e.clientX-x0,my=e.clientY-y0;
+    if(!mode){if(Math.abs(mx)<8&&Math.abs(my)<8)return;
+      mode=Math.abs(mx)>Math.abs(my)?"h":"v";
+      if(mode==="h"){moved=true;try{li.setPointerCapture(pid)}catch(_){}}}
+    if(mode!=="h")return;
+    dx=Math.min(0,base+mx); swSet(li,dx<-li.offsetWidth?-li.offsetWidth:dx,false);
+  });
+  const end=e=>{
+    if(e.pointerId!==pid)return; pid=null;
+    if(mode!=="h"){mode=null;return} mode=null;
+    if(e.type==="pointercancel"){swSet(li,base,true);return}
+    if(dx<-li.offsetWidth*.55)swipeDelete(li,id);
+    else if(dx<-SW_OPEN/2){swSet(li,-SW_OPEN,true);swOpen=li}
+    else swClose(li);
+  };
+  li.addEventListener("pointerup",end); li.addEventListener("pointercancel",end);
+  /* a swipe is not a tap; tapping an open row just closes it */
+  li.addEventListener("click",e=>{
+    if(e.target.closest(".swdel"))return;
+    if(moved||swOpen===li){e.stopImmediatePropagation();e.preventDefault();moved=false;if(swOpen===li)swClose(li)}
+  },true);
+}
+/* tapping or scrolling anywhere else closes an open row */
+document.addEventListener("pointerdown",e=>{if(swOpen&&!swOpen.contains(e.target))swClose(swOpen)},true);
+window.addEventListener("scroll",()=>{if(swOpen)swClose(swOpen)},{passive:true});
 
 /* ---------- toast ---------- */
 let tt;
