@@ -26,7 +26,7 @@
 <link rel="apple-touch-startup-image" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/828x1792.png">
 <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)" href="splash/750x1334.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" id="webfonts" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap" media="print" onload="this.media='all';this.dataset.done=1" onerror="this.dataset.done=1">
+<link rel="stylesheet" id="webfonts" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" media="print" onload="this.media='all';this.dataset.done=1" onerror="this.dataset.done=1">
 <style>
 /* Layout: one phone-first column (max 560px), sticky top bar, fixed add bar at the bottom, sheets slide up for each way of logging */
 :root{
@@ -36,18 +36,21 @@
   --scrim:rgba(14,22,17,.45);
   --f-display:"Noto Serif TC","Songti TC",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --f-num:"Noto Sans TC","PingFang TC",-apple-system,sans-serif;
+  --shadow:0 1px 2px rgba(20,40,28,.05),0 6px 18px -10px rgba(20,40,28,.18);
+  --hero1:#2C7650; --hero2:#1F5A3C; --act-soft:#FFF0E3; --act:#D9702A;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0F1411; --surface:#171F1A; --ink:#E5ECE6; --muted:#97A59C; --line:#28332C;
   --accent:#62BE88; --accent-ink:#0B1A10; --accent-soft:#1B3224;
-  --pro:#E27D65; --carb:#E0B04C; --fat:#82A7E0; --fib:#9CC66A; --warn:#F17C60; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+  --pro:#E27D65; --carb:#E0B04C; --fat:#82A7E0; --fib:#9CC66A; --warn:#F17C60; --scrim:rgba(0,0,0,.6);
+  --shadow:0 0 0 1px rgba(255,255,255,.05),0 8px 20px -12px rgba(0,0,0,.7); --hero1:#22603F; --hero2:#163F2B; --act-soft:#3A2618; --act:#F0A060; color-scheme:dark}}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--bg)}
 html:has(#splash){background:#2C7650}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 img{max-width:100%}
 [hidden]{display:none!important}
@@ -55,13 +58,19 @@ img{max-width:100%}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg)}
 .top .wrap{display:flex;align-items:center;gap:8px;padding-block:10px}
 .brand{font-family:var(--f-display);font-weight:900;font-size:20px;letter-spacing:.04em;margin-right:auto;display:flex;align-items:baseline;gap:8px;min-width:0}
-.sync{font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0;border:0;background:none;padding:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sync.err{color:var(--warn);text-decoration:underline}
+.sync{font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--warn);letter-spacing:0;border:0;background:none;padding:6px 4px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:center}
+.sync i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--muted);opacity:.6}
+.sync[data-s=ok] i{background:var(--accent);opacity:1;box-shadow:0 0 0 3px var(--accent-soft)}
+.sync[data-s=wait] i,.sync[data-s=busy] i{background:var(--carb);opacity:1;animation:blink 1.2s ease-in-out infinite}
+.sync[data-s=err] i{background:var(--warn);opacity:1}
+.sync .lbl{display:none}.sync[data-s=err] .lbl{display:inline}
+@keyframes blink{50%{opacity:.35}}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;height:36px;min-width:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none}
 .iconbtn:disabled{opacity:.4}
 .datebar{display:flex;align-items:center;gap:6px;padding-block:14px 4px}
@@ -70,22 +79,28 @@ button{cursor:pointer}
 .datebar .sp{flex:1}
 .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
 
-.summary{display:grid;grid-template-columns:132px 1fr;gap:18px;align-items:center;padding-block:14px}
-.ring{position:relative;width:132px;height:132px}
+.hero{margin-block:10px 14px;border-radius:24px;padding:20px 20px 18px;background:linear-gradient(150deg,var(--hero1),var(--hero2));color:#fff;box-shadow:0 12px 28px -14px rgba(31,90,60,.7)}
+.summary{display:grid;grid-template-columns:128px 1fr;gap:20px;align-items:center}
+.hstats{display:grid;gap:12px;min-width:0}
+.hstats small{display:block;font-size:12px;opacity:.75}
+.hstats b{font-size:22px;font-weight:700;line-height:1.2}
+.hstats span.u{font-size:12px;opacity:.75;margin-left:3px}
+.hstats .plus{display:block;font-size:12px;opacity:.85}
+.ring{position:relative;width:128px;height:128px}
 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
 .ring .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.ring .big{font-family:var(--f-num);font-weight:600;font-size:28px;line-height:1.1}
-.ring .lbl{font-size:12px;color:var(--muted)}
-.ring.over .big{color:var(--warn)}
-.macros{display:grid;gap:10px;min-width:0}
-.mrow .h{display:flex;justify-content:space-between;font-size:13px}
-.mrow .h b{font-weight:500}
-.mrow .h span{color:var(--muted)}
-.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
-.bar i{display:block;height:100%;border-radius:4px;transition:width .4s}
-.kcalline{font-size:13px;color:var(--muted)}
-.kcalline b{color:var(--ink);font-weight:600}
-.kcalline .plus{color:var(--accent)}
+.ring .big{font-family:var(--f-num);font-weight:700;font-size:34px;line-height:1.05}
+.ring .lbl{font-size:12px;opacity:.75}
+.ring.over .big{color:#FFC2B3}
+.ring #ringArc{transition:stroke-dasharray .6s ease-out}
+.macros{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.16)}
+.mrow .h{font-size:11px;opacity:.78;white-space:nowrap}
+.mrow .v{font-size:12px;white-space:nowrap}
+.mrow .v span{opacity:.65}
+.mrow .v b{font-size:16px;font-weight:700}
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .5s ease-out}
+.bar i.pro{background:#FF9E88}.bar i.carb{background:#FFD166}.bar i.fat{background:#9CC2FF}.bar i.fib{background:#B7E07F}
 .fold summary{cursor:pointer;font-size:12px;color:var(--accent);list-style:none;display:inline-flex;align-items:center;gap:4px;padding:2px 0}
 .fold summary::-webkit-details-marker{display:none}
 .fold summary::after{content:"";width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .15s}
@@ -97,9 +112,10 @@ button{cursor:pointer}
 .brow b{font-weight:600;text-align:right}
 .brow small{grid-column:1/-1;font-size:12px;color:var(--muted)}
 .breakdown .hint{padding:6px 0}
-.activity{width:100%;display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;text-align:left;background:var(--accent-soft);border:0;border-radius:14px;padding:10px 14px;margin-bottom:4px}
-.activity svg{width:22px;height:22px;grid-row:span 2;color:var(--accent)}
-.activity .a-main{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.activity{width:100%;display:grid;grid-template-columns:auto 1fr;gap:0 12px;align-items:center;text-align:left;background:var(--surface);border:0;border-radius:20px;padding:12px 16px;margin-bottom:4px;box-shadow:var(--shadow)}
+.activity svg{width:40px;height:40px;padding:9px;border-radius:12px;background:var(--act-soft);grid-row:span 2;color:var(--act)}
+.activity .a-main{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.activity #actKcal{font-weight:700;font-size:16px}
 .activity .a-main b{font-weight:500}
 .activity .a-sub{font-size:12px;color:var(--muted)}
 .activity .actval{display:inline-flex;align-items:center;gap:6px}
@@ -108,12 +124,12 @@ button{cursor:pointer}
 .check input{width:20px;height:20px;accent-color:var(--accent);flex:none}
 a.btn{color:inherit;text-decoration:none}
 
-section.meal{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-block:12px;overflow:hidden}
-.meal .mhead{display:flex;align-items:baseline;gap:8px;padding:12px 14px 8px;width:100%;border:0;background:none;text-align:left}
-.meal .mhead .mt{font-size:16px;font-weight:700}
-.meal .mhead .tot{margin-left:auto;color:var(--muted);font-size:13px}
-.meal .mhead .addin{font-size:13px;color:var(--accent);font-weight:500;white-space:nowrap}
-.meal .mhead:hover .addin{text-decoration:underline}
+section.meal{background:var(--surface);border-radius:20px;margin-block:14px;overflow:hidden;box-shadow:var(--shadow)}
+.meal .mhead{display:flex;align-items:center;gap:8px;padding:14px 16px 8px;width:100%;border:0;background:none;text-align:left}
+.meal .mhead .mt{font-size:17px;font-weight:700}
+.meal .mhead .tot{color:var(--muted);font-size:13px}
+.meal .mhead .addin{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:20px;line-height:30px;text-align:center;flex:none}
+.meal .mhead:hover .addin{background:var(--accent);color:var(--accent-ink)}
 .meal li.it{cursor:pointer}
 .meal li.it:hover{background:var(--accent-soft)}
 .meal .empty{cursor:pointer}
@@ -138,12 +154,12 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .myf .n{font-size:12px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:2.6em}
 .myf .k{font-family:var(--f-num);font-size:11px;color:var(--muted)}
 .myf .x{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:var(--warn);color:#fff;font-size:14px;line-height:1}
-.tag.my{border-color:var(--carb);color:var(--carb)}
+.tag.my{background:color-mix(in srgb,var(--carb) 16%,transparent);color:var(--carb)}
 .photopick{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .photopick img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
 .photopick .btn{min-height:40px;cursor:pointer}
-.meal li.hasph{grid-template-columns:44px 1fr auto auto}
-.thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--accent-soft);border:1px solid var(--line);cursor:zoom-in;display:block}
+.meal li.hasph{grid-template-columns:46px 1fr auto}
+.thumb{width:46px;height:46px;border-radius:12px;object-fit:cover;background:var(--accent-soft);cursor:zoom-in;display:block}
 .viewer{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .viewer img{max-width:100%;max-height:100%;border-radius:8px;object-fit:contain}
 .viewer button{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));background:rgba(255,255,255,.15);color:#fff;border:0}
@@ -156,28 +172,35 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 @keyframes pulse{50%{box-shadow:0 0 0 8px var(--accent-soft)}}
 @media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
 .meal ul{list-style:none;margin:0;padding:0}
-.meal li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid var(--line)}
+.meal li{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 16px}
+.meal li:last-child{padding-bottom:14px}
+.meal li .kc{font-weight:700;font-size:15px;white-space:nowrap}
+.meal li .kc small{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px}
+.meal li .nm>div:first-child{font-weight:500}
 .meal li .nm{min-width:0}
 .meal li .nm div{overflow-wrap:anywhere}
 .meal li .sub{font-size:12px;color:var(--muted)}
-.mc{display:inline-flex;align-items:center;gap:4px;margin-right:10px;white-space:nowrap}
-.mc i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
-.tag{font-size:10px;letter-spacing:.06em;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:2px;border:1px solid var(--accent);color:var(--accent)}
-.del{border:0;background:none;color:var(--muted);width:30px;height:30px;border-radius:8px;font-size:18px;line-height:1}
-.del:hover{background:var(--accent-soft);color:var(--ink)}
-.meal .empty{padding:2px 14px 12px;font-size:13px;color:var(--muted)}
+.mc{display:inline-flex;align-items:center;gap:3px;margin-right:8px;white-space:nowrap}
+.mc i{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.tag{font-size:10px;font-weight:500;letter-spacing:.04em;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px;background:var(--accent-soft);color:var(--accent)}
+.meal .empty{margin:2px 16px 16px;border:1.5px dashed var(--line);border-radius:14px;padding:11px 12px;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:10px}
+.meal .empty b{margin-left:auto;color:var(--accent);font-weight:500;white-space:nowrap}
 
-.week{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-block:12px}
-.week h2{font-size:16px;margin:0 0 4px;font-weight:700}
+.week{background:var(--surface);border-radius:20px;padding:14px 16px;margin-block:14px;box-shadow:var(--shadow)}
+.week h2{font-size:17px;margin:0 0 4px;font-weight:700}
 .week .avg{font-size:13px;color:var(--muted)}
 .week svg{width:100%;height:auto;display:block;margin-top:6px}
 
-.banner{border:1px dashed var(--line);border-radius:14px;padding:14px;margin-block:12px;font-size:14px;color:var(--muted);display:grid;gap:10px}
+.banner{background:var(--surface);box-shadow:var(--shadow);border-radius:20px;padding:16px;margin-block:12px;font-size:14px;color:var(--muted);display:grid;gap:10px}
 .banner b{color:var(--ink)}
 .banner .btn{justify-self:start}
 
-.addbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-.addbar .wrap{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:8px;padding-block:10px}
+.addbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:linear-gradient(to top,var(--bg) 55%,transparent);padding-bottom:max(12px,env(safe-area-inset-bottom,0px));pointer-events:none}
+.addbar .wrap{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;padding-block:18px 0;pointer-events:auto}
+.addbar .btn{min-height:58px;border-radius:18px;border:0;box-shadow:var(--shadow)}
+.addbar .btn.primary{font-size:16px;font-weight:700;box-shadow:0 10px 22px -10px rgba(31,90,60,.8)}
+.addbar .side{flex-direction:column;gap:2px;padding:6px 4px;font-size:11px;color:var(--muted)}
+.addbar .side svg{color:var(--ink)}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:12px;min-height:46px;padding:8px 12px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -240,7 +263,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 .actions .field{flex:1 1 120px}
 .actions .btn{flex:2 1 160px}
 
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 14px;font-size:14px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);border-radius:14px;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);padding:10px 14px;font-size:14px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px)}
 .toast button{border:0;background:none;color:var(--bg);font-weight:700;text-decoration:underline}
 
 @media (max-width:400px){.summary{grid-template-columns:112px 1fr;gap:14px}.ring{width:112px;height:112px}.ring .big{font-size:24px}.grid4{grid-template-columns:1fr 1fr}}
@@ -258,7 +281,7 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 <script>/* keep the logo where the full-screen iOS launch image had it */(function(){var d=screen.height-innerHeight;if(navigator.standalone&&d>0&&d<80)document.getElementById("splash").style.paddingBottom=d+"px"})()</script>
 
 <div class="top"><div class="wrap">
-  <div class="brand">食刻<button class="sync" id="syncState" type="button">只存在這台裝置</button></div>
+  <div class="brand">食刻<button class="sync" id="syncState" type="button" data-s="local"><i></i><span class="lbl"></span><span class="vh">只存在這台裝置</span></button></div>
   <button class="iconbtn" id="openGoal" aria-label="目標設定">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>目標
   </button>
@@ -281,17 +304,22 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
     <button class="iconbtn" id="nextDay" aria-label="後一天">›</button>
   </div>
 
-  <div class="summary">
-    <div class="ring" id="ring">
-      <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="var(--line)" stroke-width="12"/><circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="0 400"/></svg>
-      <div class="c"><span class="lbl" id="ringLbl">還可以吃</span><span class="big" id="ringNum">0</span><span class="lbl">kcal</span></div>
+  <div class="hero">
+    <div class="summary">
+      <div class="ring" id="ring">
+        <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="10"/><circle id="ringArc" cx="60" cy="60" r="52" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 400"/></svg>
+        <div class="c"><span class="lbl" id="ringLbl">還可以吃</span><span class="big num" id="ringNum">0</span><span class="lbl">kcal</span></div>
+      </div>
+      <div class="hstats">
+        <div><small>已吃</small><b class="num" id="eaten">0</b><span class="u">kcal</span></div>
+        <div><small>今日目標</small><b class="num" id="goalK">0</b><span class="u">kcal</span><span class="plus num" id="goalPlus"></span></div>
+      </div>
     </div>
     <div class="macros">
-      <div class="kcalline">已吃 <b class="num" id="eaten">0</b> / <span class="num" id="goalK">0</span> kcal<span class="plus num" id="goalPlus"></span></div>
-      <div class="mrow"><div class="h"><b>蛋白質</b><span class="num" id="pTxt"></span></div><div class="bar"><i id="pBar" style="background:var(--pro)"></i></div></div>
-      <div class="mrow"><div class="h"><b>碳水</b><span class="num" id="cTxt"></span></div><div class="bar"><i id="cBar" style="background:var(--carb)"></i></div></div>
-      <div class="mrow"><div class="h"><b>脂肪</b><span class="num" id="fTxt"></span></div><div class="bar"><i id="fBar" style="background:var(--fat)"></i></div></div>
-      <div class="mrow"><div class="h"><b>膳食纖維</b><span class="num" id="fbTxt"></span></div><div class="bar"><i id="fbBar" style="background:var(--fib)"></i></div></div>
+      <div class="mrow"><div class="h">蛋白質</div><div class="v num" id="pTxt"></div><div class="bar"><i id="pBar" class="pro"></i></div></div>
+      <div class="mrow"><div class="h">碳水</div><div class="v num" id="cTxt"></div><div class="bar"><i id="cBar" class="carb"></i></div></div>
+      <div class="mrow"><div class="h">脂肪</div><div class="v num" id="fTxt"></div><div class="bar"><i id="fBar" class="fat"></i></div></div>
+      <div class="mrow"><div class="h">膳食纖維</div><div class="v num" id="fbTxt"></div><div class="bar"><i id="fbBar" class="fib"></i></div></div>
     </div>
   </div>
 
@@ -315,9 +343,9 @@ section.meal{background:var(--surface);border:1px solid var(--line);border-radiu
 </main>
 
 <nav class="addbar"><div class="wrap">
-  <button class="btn primary" id="addPhoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>拍照估算</button>
-  <button class="btn" id="addText"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/></svg>描述</button>
-  <button class="btn" id="addManual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>手動</button>
+  <button class="btn side" id="addText"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/></svg>描述</button>
+  <button class="btn primary" id="addPhoto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>拍照記錄</button>
+  <button class="btn side" id="addManual"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>手動</button>
 </div></nav>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -606,10 +634,10 @@ async function shrinkBlob(file){
 /* ---------- sync ---------- */
 let syncing=false, syncErr=null, pulled=new Set();
 function setSync(){
-  const el=$("syncState");
-  el.classList.toggle("err",!!syncErr);
-  if(!ghReady()){el.textContent="只存在這台裝置";return}
-  el.textContent=syncErr?syncErr+"（點此重試）":syncing?"同步中…":(cache.dirtyMonths.length||cache.dirtyProfile||cache.dirtyMy||cache.pendingPhotos.length)?"等待同步":"已同步到 GitHub";
+  /* a small dot next to the name; the words show only on error, the full text goes to screen readers and a toast on tap */
+  const el=$("syncState"), wait=cache.dirtyMonths.length||cache.dirtyProfile||cache.dirtyMy||cache.pendingPhotos.length;
+  const [st,txt]=!ghReady()?["local","只存在這台裝置"]:syncErr?["err",syncErr+"（點此重試）"]:syncing?["busy","同步中…"]:wait?["wait","等待同步"]:["ok","已同步到 GitHub"];
+  el.dataset.s=st; el.title=txt; el.querySelector(".vh").textContent=txt; el.querySelector(".lbl").textContent=st==="err"?"同步失敗":"";
 }
 function ghErrText(e){
   if(e&&e.status===401)return "GitHub token 無效或過期";
@@ -765,7 +793,7 @@ function deleteMy(id){
   cache.dirtyMy=true; saveCache(); sync();
 }
 function markDay(k){const m=monthOf(k);if(!cache.dirtyMonths.includes(m))cache.dirtyMonths.push(m);saveCache();sync()}
-$("syncState").onclick=()=>{if(!ghReady())openSettings();else{pulled.clear();sync()}};
+$("syncState").onclick=()=>{toast($("syncState").title);if(!ghReady())openSettings();else{pulled.clear();sync()}};
 window.addEventListener("online",sync);
 /* re-read GitHub whenever this page comes back, so an old tab never works from stale data */
 let lastPull=0;
@@ -862,6 +890,16 @@ function tdeeFor(k){
   if(isPrecise()&&a&&a.active>0)return c.tdee+Math.round(a.active);
   return c.tdee;
 }
+const fmtN=v=>Math.round(+v||0).toLocaleString("zh-TW");
+/* what's left today, shared by the main meals not logged yet (snacks get no suggestion) */
+function mealSuggest(mk,items,left,isToday){
+  if(!isToday||mk==="s"||left<=0)return 0;
+  const open=["b","l","d"].filter(m=>!items.some(i=>i.meal===m)), now=new Date().getHours();
+  /* a meal whose time has passed is probably skipped, so don't count it */
+  const later=open.filter(m=>m==="d"||(m==="l"&&now<15)||(m==="b"&&now<11));
+  if(!later.includes(mk))return 0;
+  return Math.round(left/later.length/10)*10;
+}
 function render(){
   const k=state.date, today=keyOf(new Date()), d=parseKey(k);
   $("dateTitle").textContent=k===today?"今天":k===shift(today,-1)?"昨天":(d.getMonth()+1)+"月"+d.getDate()+"日";
@@ -871,7 +909,7 @@ function render(){
   const items=cache.days[k]||[], t=totals(items), g=goalFor(k), act=cache.activity[k], dyn=profile().dyn||{};
   if(!$("sheetAct").hidden&&document.activeElement!==$("aK")&&document.activeElement!==$("aSteps")) fillActSheet();
   const prec=isPrecise(dyn);
-  $("goalPlus").textContent=g.extra?`（含活動 +${g.extra}）`:"";
+  $("goalPlus").textContent=g.extra?`含活動 +${g.extra}`:"";
   $("actKcal").textContent=act&&act.active>0?Math.round(act.active)+" kcal":"—";
   $("actSub").textContent=act&&act.active>0?[act.steps?Number(act.steps).toLocaleString("zh-TW")+" 步":"",act.src==="health"?"來自健康 App":"手動輸入",
       prec?`目標計入 ${Math.round((dyn.ratio||0.75)*100)}%`:"懶人估算，不另外加到目標"].filter(Boolean).join(" · ")
@@ -882,12 +920,12 @@ function render(){
   const left=Math.round(g.kcal-t.k), over=left<0;
   $("ring").classList.toggle("over",over);
   $("ringLbl").textContent=over?"超出":"還可以吃";
-  $("ringNum").textContent=Math.abs(left);
+  $("ringNum").textContent=fmtN(Math.abs(left));
   const C=2*Math.PI*52, frac=Math.min(1,t.k/(g.kcal||1));
-  const arc=$("ringArc"); arc.setAttribute("stroke-dasharray",(frac*C)+" "+C); arc.setAttribute("stroke",over?"var(--warn)":"var(--accent)");
-  $("eaten").textContent=Math.round(t.k); $("goalK").textContent=g.kcal;
+  const arc=$("ringArc"); arc.setAttribute("stroke-dasharray",(frac*C)+" "+C); arc.setAttribute("stroke",over?"#FFB4A2":"#fff");
+  $("eaten").textContent=fmtN(t.k); $("goalK").textContent=fmtN(g.kcal);
   for(const [m,v,gv] of [["p",t.p,g.p],["c",t.c,g.c],["f",t.f,g.f],["fb",t.fb,g.fb]]){
-    $(m+"Txt").textContent=Math.round(v)+" / "+gv+" g";
+    $(m+"Txt").innerHTML=`<b>${Math.round(v)}</b><span>/${Math.round(gv)}g</span>`;
     $(m+"Bar").style.width=Math.min(100,v/(gv||1)*100)+"%";
   }
   $("welcome").hidden=items.length>0;
@@ -897,26 +935,31 @@ function render(){
     const sec=document.createElement("section"); sec.className="meal";
     const h=document.createElement("button");
     h.type="button"; h.className="mhead"; h.setAttribute("aria-label","新增到"+ml);
-    h.innerHTML=`<span class="mt"></span><span class="tot num"></span><span class="addin">＋ 新增</span>`;
+    h.innerHTML=`<span class="mt"></span><span class="tot num"></span><span class="addin" aria-hidden="true">+</span>`;
     h.querySelector(".mt").textContent=ml;
-    h.querySelector(".tot").textContent=list.length?Math.round(totals(list).k)+" kcal":"";
+    h.querySelector(".tot").textContent=list.length?fmtN(totals(list).k)+" kcal":"";
     h.onclick=()=>openAddTo(mk);
     sec.append(h);
-    if(!list.length){const e=document.createElement("div");e.className="empty";e.textContent="尚未記錄";e.onclick=()=>openAddTo(mk);sec.append(e)}
+    if(!list.length){
+      const e=document.createElement("div");e.className="empty";
+      const sug=mealSuggest(mk,items,left,k===today);
+      e.innerHTML=`<span></span><b>拍照</b>`; e.firstChild.textContent=sug?`建議約 ${fmtN(sug)} kcal，拍一張就好`:"尚未記錄";
+      e.onclick=()=>openAddTo(mk);
+      e.lastChild.onclick=ev=>{ev.stopPropagation();pendingMeal=mk;$("addPhoto").onclick()};
+      sec.append(e)}
     else{
       const ul=document.createElement("ul");
       for(const it of list){
         const li=document.createElement("li");
         li.className="it"; li.tabIndex=0; li.setAttribute("role","button");
-        li.onclick=e=>{if(!e.target.closest(".del"))openEdit(it.id)};
+        li.onclick=()=>openEdit(it.id);
         li.onkeydown=e=>{if(e.key==="Enter"&&e.target===li)openEdit(it.id)};
-        li.innerHTML=`<div class="nm"><div></div><div class="sub num"></div></div><span class="num"></span><button class="del" aria-label="刪除">×</button>`;
+        li.innerHTML=`<div class="nm"><div></div><div class="sub num"></div></div><span class="kc num"></span>`;
         const nm=li.querySelector(".nm div");
         nm.textContent=it.name;
         if(it.src&&it.src!=="manual"){const tg=document.createElement("span");tg.className="tag";tg.textContent=it.src==="photo"?"拍照 AI":it.src==="label"?"標示 AI":"AI";nm.append(tg)}
         macroLine(li.querySelector(".sub"),it.portion,it.p,it.c,it.f,it.fb);
-        li.children[1].textContent=Math.round(it.kcal);
-        li.querySelector(".del").onclick=()=>removeItem(it.id);
+        li.children[1].innerHTML=`${fmtN(it.kcal)}<small>kcal</small>`;
         if(it.photo){
           li.classList.add("hasph");
           const im=document.createElement("img"); im.className="thumb"; im.alt=it.name+" 的照片";
@@ -940,7 +983,7 @@ function renderWeek(){
   const tdees=keys.map(tdeeFor), hasT=tdees.every(v=>v>0), refs=hasT?tdees:goals, lbl=hasT?"TDEE":"目標";
   const refSel=refs[6], flat=refs.every(v=>v===refs[0]), refAvg=Math.round(refs.reduce((a,b)=>a+b,0)/7);
   const logged=vals.filter(v=>v>0);
-  $("weekAvg").textContent=logged.length?`有紀錄的 ${logged.length} 天平均 ${Math.round(logged.reduce((a,b)=>a+b,0)/logged.length)} kcal，${lbl} ${flat?"":"平均 "}${refAvg} kcal`:`記錄幾天後，這裡會顯示每天和 ${lbl} 的比較`;
+  $("weekAvg").textContent=logged.length?`有紀錄的 ${logged.length} 天平均 ${fmtN(logged.reduce((a,b)=>a+b,0)/logged.length)} kcal，${lbl} ${flat?"":"平均 "}${fmtN(refAvg)} kcal`:`記錄幾天後，這裡會顯示每天和 ${lbl} 的比較`;
   const W=340,top=14,base=118,max=Math.max(Math.max(...refs)*1.15,...vals,1),y=v=>base-(v/max)*(base-top);
   const bw=28, step=(W-30)/7;
   let s=`<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--line)"/>`;
@@ -950,8 +993,8 @@ function renderWeek(){
   s+=`<path d="${dp}" fill="none" stroke="var(--muted)" stroke-dasharray="4 4"/><text x="${W}" y="${y(refSel)-4}" text-anchor="end" font-size="10" fill="var(--muted)">${lbl} ${refSel}</text>`;
   keys.forEach((k,i)=>{
     const v=vals[i], x=15+i*step+(step-bw)/2, d=parseKey(k), sel=k===state.date;
-    if(v>0){s+=`<rect x="${x}" y="${y(v)}" width="${bw}" height="${base-y(v)}" rx="4" fill="${v>goals[i]?"var(--warn)":"var(--accent)"}" opacity="${sel?1:.55}"/>`;
-      if(sel) s+=`<text x="${x+bw/2}" y="${y(v)-4}" text-anchor="middle" font-size="10" fill="var(--ink)" font-family="IBM Plex Mono,monospace">${v}</text>`;}
+    if(v>0){s+=`<rect x="${x}" y="${y(v)}" width="${bw}" height="${base-y(v)}" rx="6" fill="${v>goals[i]*1.1?"var(--warn)":"var(--accent)"}" opacity="${sel?1:.4}"/>`;
+      if(sel) s+=`<text x="${x+bw/2}" y="${y(v)-4}" text-anchor="middle" font-size="10" fill="var(--ink)" font-weight="700" font-family="Noto Sans TC,sans-serif">${fmtN(v)}</text>`;}
     s+=`<text x="${x+bw/2}" y="${base+16}" text-anchor="middle" font-size="11" fill="${sel?"var(--ink)":"var(--muted)"}" font-weight="${sel?700:400}">${WD[d.getDay()]}</text>`;
     s+=`<text x="${x+bw/2}" y="${base+29}" text-anchor="middle" font-size="9" fill="var(--muted)">${d.getMonth()+1}/${d.getDate()}</text>`;
   });
