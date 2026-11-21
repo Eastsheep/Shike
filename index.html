@@ -302,13 +302,17 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;flex:none}
 @keyframes sp{to{transform:rotate(360deg)}}
 .cands{display:grid;gap:8px}
-.cand{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center}
+.cand{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:10px 14px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center}
 .cand input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
 .cand .row{display:flex;gap:8px;align-items:center;min-width:0;flex-wrap:wrap}
 .cand .nm{flex:1 1 140px;min-width:0;border:0;border-bottom:1px solid var(--line);background:transparent;padding:4px 0;font-weight:500;font-size:16px}
 .cand .kc{width:80px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--bg);text-align:right;font-size:16px}
 .cand select{border:1px solid var(--line);border-radius:8px;padding:4px;background:var(--bg)}
 .cand .sub{grid-column:2;font-size:12px;color:var(--muted)}
+.cand .parts{grid-column:2;font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.cand .parts .linkbtn{font-size:12px;padding:2px 0}
+.cand.merged{box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+.mergebtn{width:100%;margin-top:8px;border:0;box-shadow:var(--shadow);color:var(--accent)}
 .nlbl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
 .nlbl table{width:100%;border-collapse:collapse;font-size:14px}
 .nlbl th{font-size:12px;font-weight:500;color:var(--muted);text-align:right;padding:0 0 4px 6px;white-space:nowrap}
@@ -977,7 +981,7 @@ window.addEventListener("focus",refreshFromGitHub);
 window.addEventListener("pageshow",e=>{if(e.persisted)refreshFromGitHub()});
 
 /* ---------- DeepSeek ---------- */
-const FORMAT=`只回覆 JSON，格式：{"items":[{"name":"滷肉飯","portion":"1 小碗 約 200g","kcal":420,"protein":13,"carbs":55,"fat":16,"fiber":1.2}],"note":"一句話說明估算依據或需要注意的地方"}
+const FORMAT=`只回覆 JSON，格式：{"items":[{"name":"滷肉飯","portion":"1 小碗 約 200g","kcal":420,"protein":13,"carbs":55,"fat":16,"fiber":1.2,"parts":[]}],"note":"一句話說明估算依據或需要注意的地方"}
 規則：name 用台灣常用的繁體中文名稱；每一樣可分辨的食物或飲料各一筆；kcal 為整數，protein/carbs/fat/fiber 為公克（可一位小數），fiber 是膳食纖維；份量依常見台灣份量估計。`;
 function parseJSON(t){
   t=String(t||"").trim();
@@ -1011,8 +1015,13 @@ function dsErr(e){
 }
 function normalize(r){
   const arr=r&&Array.isArray(r.items)?r.items:[];
-  return {note:r&&typeof r.note==="string"?r.note:"",items:arr.map(x=>({name:String(x.name||"食物").slice(0,40),portion:String(x.portion||"").slice(0,40),
-    kcal:Math.max(0,Math.round(Number(x.kcal)||0)),p:r1(x.protein),c:r1(x.carbs),f:r1(x.fat),fb:r1(x.fiber)}))};
+  const one=x=>({name:String(x.name||"食物").slice(0,40),portion:String(x.portion||"").slice(0,40),
+    kcal:Math.max(0,Math.round(Number(x.kcal)||0)),p:Math.max(0,r1(x.protein)),c:Math.max(0,r1(x.carbs)),f:Math.max(0,r1(x.fat)),fb:Math.max(0,r1(x.fiber))});
+  /* a dish may come with its components ("parts") so the user can split it back apart */
+  return {note:r&&typeof r.note==="string"?r.note:"",items:arr.map(x=>{const o=one(x);
+    const parts=Array.isArray(x.parts)?x.parts.filter(q=>q&&q.name).map(one):[];
+    if(parts.length>1)o.parts=parts;
+    return o})};
 }
 async function shrinkToDataUrl(file){
   const url=URL.createObjectURL(file);
@@ -1247,30 +1256,60 @@ function showCands(target,res,src){
   if(res.note){const n=document.createElement("div");n.className="note";n.textContent=res.note;target.append(n)}
   if(!res.items.length){const e=document.createElement("div");e.className="status";e.textContent="沒有辨識到食物，換張照片或補充說明再試。";target.append(e);return}
   const wrap=document.createElement("div");wrap.className="cands";wrap.style.marginTop="8px";
-  res.items.forEach((x,i)=>{
-    const c=document.createElement("div");c.className="cand";
-    c.innerHTML=`<input type="checkbox" checked aria-label="選取"><div class="row"><input class="nm" aria-label="名稱"><input class="kc num" type="number" inputmode="decimal" min="0" aria-label="熱量"><span class="hint">kcal</span><select aria-label="份量倍數"><option value="0.5">×0.5</option><option value="1" selected>×1</option><option value="1.5">×1.5</option><option value="2">×2</option></select></div><div class="sub num"></div>`;
+  /* one result card; x = {name,portion,kcal,p,c,f,fb,parts?}, on = checked */
+  const card=(x,on=true)=>{
+    const c=document.createElement("div");c.className="cand"+(x.merged?" merged":"");
+    c.innerHTML=`<input type="checkbox" aria-label="選取"><div class="row"><input class="nm" aria-label="名稱"><input class="kc num" type="number" inputmode="decimal" min="0" aria-label="熱量"><span class="hint">kcal</span><select aria-label="份量倍數"><option value="0.5">×0.5</option><option value="1" selected>×1</option><option value="1.5">×1.5</option><option value="2">×2</option></select></div><div class="sub num"></div>`;
     const cb=c.querySelector("[type=checkbox]"),nm=c.querySelector(".nm"),kc=c.querySelector(".kc"),mul=c.querySelector("select");
-    nm.value=x.name; kc.value=x.kcal;
+    cb.checked=on; nm.value=x.name; kc.value=x.kcal;
     const sub=c.querySelector(".sub");
-    const upd=()=>{const m=+mul.value;macroLine(sub,x.portion,x.p*m,x.c*m,x.f*m,x.fb*m)};
+    const upd=()=>{const m=+mul.value;macroLine(sub,x.parts?"":x.portion,x.p*m,x.c*m,x.f*m,x.fb*m)};
     mul.onchange=()=>{kc.value=Math.round(x.kcal*mul.value);upd()}; upd();
-    c._get=()=>{if(!cb.checked)return null;const m=+mul.value;const k=Math.max(0,+kc.value||0);const ratio=x.kcal?k/(x.kcal*m):1;
+    /* current values with the user's edits: multiplier first, then a hand-typed kcal scales everything */
+    const scale=()=>{const m=+mul.value;const k=Math.max(0,+kc.value||0);return{m,k,ratio:x.kcal?k/(x.kcal*m):1}};
+    const cur=()=>{const{m,k,ratio}=scale();
       return{name:nm.value.trim()||x.name,portion:x.portion+(m!==1?` ×${m}`:""),kcal:k,p:x.p*m*ratio,c:x.c*m*ratio,f:x.f*m*ratio,fb:x.fb*m*ratio}};
-    wrap.append(c);
-  });
+    c._get=()=>cb.checked?cur():null;
+    c._cur=cur;
+    if(x.parts){
+      const pr=document.createElement("div");pr.className="parts";
+      const t=document.createElement("span");t.textContent="含 "+x.parts.map(q=>q.name).join("、");
+      const b=document.createElement("button");b.type="button";b.className="linkbtn";b.textContent=`拆成 ${x.parts.length} 項`;
+      b.onclick=()=>{const{m,ratio}=scale(),f=m*ratio;
+        const kids=x.parts.map(q=>card({...q,kcal:Math.round(q.kcal*f),p:q.p*f,c:q.c*f,f:q.f*f,fb:q.fb*f,portion:q.portion+(m!==1?` ×${m}`:"")},cb.checked));
+        c.replaceWith(...kids);refresh()};
+      pr.append(t,b);c.append(pr);
+    }
+    return c;
+  };
+  res.items.forEach(x=>wrap.append(card(x)));
   target.append(wrap);
+  /* "合併成一項": the checked cards become one dish that keeps them as parts, so it can be split again */
+  const mergeBtn=document.createElement("button");mergeBtn.type="button";mergeBtn.className="btn mergebtn";
+  mergeBtn.onclick=()=>{
+    const sel=[...wrap.children].filter(c=>c._get());if(sel.length<2)return;
+    const parts=sel.map(c=>{const v=c._cur();return{...v,kcal:Math.round(v.kcal),p:r1(v.p),c:r1(v.c),f:r1(v.f),fb:r1(v.fb)}});
+    const t=totals(parts);
+    const names=parts.map(q=>q.name);
+    const nm=names.join("＋").length<=16?names.join("＋"):names[0]+" 等 "+names.length+" 樣";
+    const m=card({name:nm,portion:names.join("、").slice(0,40),kcal:Math.round(t.k),p:r1(t.p),c:r1(t.c),f:r1(t.f),fb:r1(t.fb),parts,merged:true});
+    sel[0].before(m);sel.forEach(c=>c.remove());refresh();
+    const i=m.querySelector(".nm");i.focus();i.select();
+    toast("已合併成一項，可以改成這道菜的名稱");
+  };
   const tot=document.createElement("div");tot.className="hint";
   const act=document.createElement("div");act.className="actions";
   act.innerHTML=`<div class="field"><label for="${src}Meal">餐別</label><select id="${src}Meal"></select></div><button class="btn primary">加入紀錄</button>`;
   mealSelect(act.querySelector("select"));
-  const sumUp=()=>{const s=[...wrap.children].map(c=>c._get()).filter(Boolean);tot.textContent=`合計約 ${Math.round(s.reduce((a,b)=>a+b.kcal,0))} kcal · AI 估算僅供參考，可直接修改數字`};
-  wrap.addEventListener("input",sumUp);wrap.addEventListener("change",sumUp);sumUp();
+  const refresh=()=>{const s=[...wrap.children].map(c=>c._get()).filter(Boolean);
+    tot.textContent=`合計約 ${Math.round(s.reduce((a,b)=>a+b.kcal,0))} kcal · AI 估算僅供參考，可直接修改數字`;
+    mergeBtn.hidden=s.length<2; mergeBtn.textContent=`把勾選的 ${s.length} 項合併成一道菜`};
+  wrap.addEventListener("input",refresh);wrap.addEventListener("change",refresh);refresh();
   act.querySelector("button").onclick=()=>{const s=[...wrap.children].map(c=>c._get()).filter(Boolean);if(!s.length){toast("請至少勾選一項");return}
     /* the photo used for recognition is kept with every item it produced */
     if(src==="photo"&&photoFile){const pid=newPhotoId(state.date), f=photoFile;s.forEach(x=>x.photo=pid);shrinkBlob(f).then(b=>b&&savePhoto(pid,b)).catch(()=>{})}
     addItems(s,act.querySelector("select").value,src);hide();resetEstimate(src)};
-  target.append(tot,act);
+  target.append(mergeBtn,tot,act);
 }
 function needKey(statusEl){
   if(cfg.dsKey)return false;
@@ -1305,7 +1344,7 @@ $("photoGo").onclick=async()=>{
   try{
     let dataUrl;
     try{dataUrl=await shrinkToDataUrl(photoFile)}catch(e){throw {code:"img"}}
-    const r=await askDeepSeek(`請辨識這張餐點照片中的每一樣食物與飲料，依照片中的份量估算熱量與三大營養素。${hint?"\n使用者補充："+hint:""}\n若照片中沒有食物，items 回空陣列並在 note 說明。\n${FORMAT}`,dataUrl,photoCtl.signal);
+    const r=await askDeepSeek(`請辨識這張餐點照片中的餐點與飲料，依照片中的份量估算熱量與三大營養素。\n以「一道菜」為一筆：同一盤、同一碗、同一個便當或同一份套餐盤裡的東西合起來算一筆（例如雞腿便當、牛肉麵、鹽酥雞拼盤），name 用整道菜的名稱，並在 parts 列出主要組成（各自含 name、portion、kcal、protein、carbs、fat、fiber，加總等於這一筆）；分開盛裝的另一道菜、湯、飲料、甜點才另起一筆。單一食物不用 parts。${hint?"\n使用者補充："+hint:""}\n若照片中沒有食物，items 回空陣列並在 note 說明。\n${FORMAT}`,dataUrl,photoCtl.signal);
     setStatus($("photoStatus"),""); showCands($("photoResult"),normalize(r),"photo");
   }catch(e){
     if(e&&e.code==="cancelled")setStatus($("photoStatus"),"");

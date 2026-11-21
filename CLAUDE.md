@@ -36,6 +36,7 @@
 - DeepSeek `https://api.deepseek.com/chat/completions`，預設模型 `deepseek-flash`（支援圖片，image_url 用 base64 data URL），瀏覽器可直接呼叫（CORS 可用）。
 - 照片先用 canvas 縮到 1280px JPEG。要求回傳 JSON `{items:[{name,portion,kcal,protein,carbs,fat}],note}`，解析時容忍 code fence。
 - 結果讓使用者勾選、改數字、選 ×0.5～×2 後才加入；加入後清空照片與文字。
+- 拍照估算以「一道菜」為一筆（同一盤／碗／便當合起來），可附 `parts`（組成，含各自營養素）；結果卡顯示「含 …」與「拆成 N 項」。勾選 2 項以上時出現「把勾選的 N 項合併成一道菜」，合併後名稱可改、仍可再拆開（使用者反映一道菜被拆成好多項）。文字描述仍逐樣拆開。
 - 拍營養標示（文字描述視窗的「拍營養標示，AI 直接轉換」，或餐別「＋新增」裡的「拍營養標示」）：選圖後直接送 AI，只讀標示上印的數字 `{name,unit,serving_size,servings,per_serving,per_100,note}`，不估算。結果顯示可修改的「每份／每100g」表格、每一份量與本包裝份數，使用者再選吃了多少（份／g 或 ml／整包，切換單位保持份量），才加入（`src:"label"`，標籤「標示 AI」）。可勾選存到我的食物（預設不勾）。標示照片不存。
 
 ## 目標計算
