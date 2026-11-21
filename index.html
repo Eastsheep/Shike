@@ -283,6 +283,54 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 #splash .mark{display:block;color:#FFF}
 @keyframes splashAuto{to{opacity:0;visibility:hidden;pointer-events:none}}
 @media (prefers-reduced-motion:reduce){#splash{transition:none}}
+
+/* goal sheet: result card on top, pick cards below, one save button */
+.ghero{margin-block:2px 0;padding:18px 20px 16px}
+.ghero small{font-size:12px;opacity:.78}
+.gedit{float:right;border:0;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font-size:12px;padding:5px 12px;margin-top:-2px}
+.gedit[aria-expanded=true]{background:#fff;color:var(--hero2)}
+.gbig{font-family:var(--f-num);font-weight:700;font-size:40px;line-height:1.1;font-variant-numeric:tabular-nums}
+.gbig .u{font-size:14px;font-weight:400;opacity:.75;margin-left:4px}
+.gsub{font-size:12px;opacity:.88}
+.gsplit{display:flex;gap:2px;height:10px;border-radius:5px;overflow:hidden;margin:14px 0 10px;background:rgba(255,255,255,.18)}
+.gsplit i{display:block;height:100%;transition:flex-grow .3s}
+.ghero i.pro{background:#FF9E88}.ghero i.carb{background:#FFD166}.ghero i.fat{background:#9CC2FF}.ghero i.fib{background:#B7E07F}
+.gleg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.gleg small{display:flex;align-items:center;gap:4px;font-size:11px;white-space:nowrap}
+.gleg small i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.gleg b{display:block;font-size:16px;font-weight:700}
+.gleg span{display:block;font-size:11px;opacity:.7;line-height:1.3}
+.gleg b{line-height:1.3}
+.gwarn{margin-top:10px;font-size:12px;background:rgba(0,0,0,.18);border-radius:10px;padding:6px 10px}
+.gmanual{background:var(--surface);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow);display:grid;gap:8px}
+.sheet h4.gh{font-size:15px;margin:8px 2px -4px}
+.gchips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.gchips button{border:0;background:var(--surface);border-radius:14px;padding:10px 2px;box-shadow:var(--shadow);font-size:14px;font-weight:500;display:grid;gap:1px;justify-items:center}
+.gchips small{font-size:11px;color:var(--muted);font-weight:400;white-space:nowrap}
+.gchips button.on{background:var(--accent);color:var(--accent-ink)}.gchips button.on small{color:inherit;opacity:.8}
+.gchips button:disabled{opacity:.4;cursor:default}
+.gcard{background:var(--surface);border-radius:20px;padding:14px 16px;box-shadow:var(--shadow);display:grid;gap:10px}
+.gseg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border-radius:12px;padding:3px}
+.gseg button{border:0;background:none;border-radius:10px;padding:7px;font-weight:500;color:var(--muted)}
+.gseg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.gbody{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gf{background:var(--bg);border-radius:12px;padding:7px 10px;display:grid;cursor:text}
+.gf small{font-size:11px;color:var(--muted)}
+.gf span{display:flex;align-items:baseline;gap:2px}
+.gf input{border:0;background:none;padding:0;width:4.6ch;flex:0 1 auto;min-width:0;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:18px;font-weight:700}
+.gf input:focus{outline:none}.gf:focus-within{box-shadow:0 0 0 2px var(--accent)}
+.gf em{font-style:normal;font-size:12px;color:var(--muted)}
+#bfAdd{justify-self:start;font-size:13px}
+.gcalc{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.gcalc b{color:var(--ink);font-family:var(--f-num)}
+.gmode{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gm{background:var(--surface);border-radius:16px;padding:12px;box-shadow:var(--shadow);border:2px solid transparent;cursor:pointer;display:block}
+.gm:has(input:checked){border-color:var(--accent)}
+.gm input{position:absolute;opacity:0;pointer-events:none}
+.gm:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.gm b{display:block;margin-bottom:2px}.gm small{font-size:12px;color:var(--muted);line-height:1.45;display:block}
+.gsave{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom,0px));margin:4px -16px 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.gsave .btn{width:100%;min-height:54px;border-radius:16px;font-size:16px;font-weight:700}
 </style>
 </head>
 <body>
@@ -444,42 +492,70 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 
 <div class="sheet" id="sheetGoal" hidden role="dialog" aria-label="目標設定"><div class="wrap">
   <div class="sh"><h3>每日目標</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div class="hero ghero">
+    <button class="gedit" id="gEditBtn" type="button" aria-expanded="false" aria-controls="gManual">手動修改</button>
+    <small>每天可以吃</small>
+    <div class="gbig"><span class="num" id="gHeroK">0</span><span class="u">kcal</span></div>
+    <div class="gsub" id="gHeroSub"></div>
+    <div class="gsplit" aria-hidden="true"><i class="pro" id="gSp"></i><i class="carb" id="gSc"></i><i class="fat" id="gSf"></i></div>
+    <div class="gleg">
+      <div><small><i class="pro"></i>蛋白質</small><b class="num" id="gLp"></b><span class="num" id="gLpp"></span></div>
+      <div><small><i class="carb"></i>碳水</small><b class="num" id="gLc"></b><span class="num" id="gLcp"></span></div>
+      <div><small><i class="fat"></i>脂肪</small><b class="num" id="gLf"></b><span class="num" id="gLfp"></span></div>
+      <div><small><i class="fib"></i>纖維</small><b class="num" id="gLfb"></b><span></span></div>
+    </div>
+    <div class="gwarn" id="gWarn" hidden></div>
+  </div>
+  <div class="gmanual" id="gManual" hidden>
+    <div class="grid4">
+      <div class="field full"><label for="gK">熱量 kcal</label><input id="gK" type="number" inputmode="numeric" min="800"></div>
+      <div class="field"><label for="gP">蛋白質 g</label><input id="gP" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="gC">碳水 g</label><input id="gC" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="gF">脂肪 g</label><input id="gF" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="gFb">纖維 g</label><input id="gFb" type="number" inputmode="numeric" min="0"></div>
+    </div>
+    <div class="hint">改了數字就以你填的為準。之後再點下面的選項或改身體資料，會換回建議值。</div>
+  </div>
   <details class="fold" id="goalBreakWrap" hidden><summary>查看計算過程</summary><div class="breakdown" id="goalBreak"></div></details>
-  <div class="grid4">
-    <div class="field full"><label for="gK">熱量 kcal</label><input id="gK" type="number" min="800"></div>
-    <div class="field"><label for="gP">蛋白質 g</label><input id="gP" type="number" min="0"></div>
-    <div class="field"><label for="gC">碳水 g</label><input id="gC" type="number" min="0"></div>
-    <div class="field"><label for="gF">脂肪 g</label><input id="gF" type="number" min="0"></div>
-    <div class="field"><label for="gFb">膳食纖維 g</label><input id="gFb" type="number" min="0"></div>
+
+  <h4 class="gh">目標</h4>
+  <select id="bGoal" hidden><option value="-500">減脂</option><option value="-300" selected>溫和減脂</option><option value="0">維持</option><option value="250">增肌</option></select>
+  <div class="gchips" id="goalChips">
+    <button type="button" data-v="-500">減脂<small>−500</small></button><button type="button" data-v="-300">溫和減脂<small>−300</small></button>
+    <button type="button" data-v="0">維持<small>±0</small></button><button type="button" data-v="250">增肌<small>+250</small></button>
   </div>
-  <div class="note">不確定要設多少？填下面的資料，用 Mifflin-St Jeor 公式估算每日消耗（TDEE），再依目標調整。</div>
-  <div class="grid2">
-    <div class="field"><label for="bSex">性別</label><select id="bSex"><option value="m">男</option><option value="f">女</option></select></div>
-    <div class="field"><label for="bAge">年齡</label><input id="bAge" type="number" min="12" max="100"></div>
-    <div class="field"><label for="bH">身高 cm</label><input id="bH" type="number" min="100" max="230"></div>
-    <div class="field"><label for="bW">體重 kg</label><input id="bW" type="number" min="30" max="250" step="0.1"></div>
-    <div class="field"><label for="bBf">體脂率 %（選填）</label><input id="bBf" type="number" inputmode="decimal" min="3" max="60" step="0.1" placeholder="例如 25"></div>
-    <div class="field"><label>去脂體重</label><input id="bLbm" disabled placeholder="填體脂率後顯示"></div>
-    <div class="field"><label for="bAct">活動量</label><select id="bAct">
-      <option value="1.2">久坐（幾乎不運動）</option><option value="1.375" selected>輕度（每週運動 1–3 天）</option>
-      <option value="1.55">中度（每週 3–5 天）</option><option value="1.725">高度（每週 6–7 天）</option></select></div>
-    <div class="field"><label for="bGoal">目標</label><select id="bGoal">
-      <option value="-500">減脂（每日 −500）</option><option value="-300" selected>溫和減脂（−300）</option>
-      <option value="0">維持</option><option value="250">增肌（+250）</option></select></div>
-    <div class="hint" id="bActHint" hidden style="grid-column:1/-1">精打細算模式固定以「久坐」計算，運動消耗依每天的活動紀錄另外加上。</div>
+  <h4 class="gh">活動量</h4>
+  <select id="bAct" hidden><option value="1.2">久坐</option><option value="1.375" selected>輕度</option><option value="1.55">中度</option><option value="1.725">高度</option></select>
+  <div class="gchips" id="actChips">
+    <button type="button" data-v="1.2">久坐<small>幾乎不動</small></button><button type="button" data-v="1.375">輕度<small>每週 1–3 天</small></button>
+    <button type="button" data-v="1.55">中度<small>每週 3–5 天</small></button><button type="button" data-v="1.725">高度<small>每週 6–7 天</small></button>
   </div>
-  <button class="btn" id="calcGo">算出並套用建議值</button>
-  <div class="hint" id="calcOut"></div>
-  <h4>熱量估算方式</h4>
-  <label class="check" for="gModeLazy"><input type="radio" name="gMode" id="gModeLazy" value="lazy" checked>懶人估算：用上面選的活動量算 TDEE，每天目標固定，不用記錄運動</label>
-  <label class="check" for="gModePrecise" style="margin-top:8px"><input type="radio" name="gMode" id="gModePrecise" value="precise">精打細算：平常以久坐（基礎代謝 × 1.2）計算，有記錄運動或健康 App 活動消耗的日子，才把活動熱量加到當天可以吃的量</label>
+  <div class="hint" id="bActHint" hidden>精打細算固定以「久坐」計算，運動消耗依每天的活動紀錄另外加上。</div>
+
+  <h4 class="gh">我的身體資料</h4>
+  <div class="gcard">
+    <select id="bSex" hidden><option value="m">男</option><option value="f">女</option></select>
+    <div class="gseg" id="sexSeg" role="group" aria-label="性別"><button type="button" data-v="m">男</button><button type="button" data-v="f">女</button></div>
+    <div class="gbody">
+      <label class="gf"><small>年齡</small><span><input id="bAge" type="number" inputmode="numeric" min="12" max="100"><em>歲</em></span></label>
+      <label class="gf"><small>身高</small><span><input id="bH" type="number" inputmode="decimal" min="100" max="230"><em>cm</em></span></label>
+      <label class="gf"><small>體重</small><span><input id="bW" type="number" inputmode="decimal" min="30" max="250" step="0.1"><em>kg</em></span></label>
+      <label class="gf" id="bfWrap" hidden><small>體脂率</small><span><input id="bBf" type="number" inputmode="decimal" min="3" max="60" step="0.1" placeholder="25"><em>%</em></span></label>
+    </div>
+    <button class="linkbtn" id="bfAdd" type="button">＋ 加入體脂率（更準）</button>
+    <div class="gcalc" id="calcOut"></div>
+  </div>
+
+  <h4 class="gh">熱量怎麼算</h4>
+  <div class="gmode">
+    <label class="gm" for="gModeLazy"><input type="radio" name="gMode" id="gModeLazy" value="lazy" checked><b>懶人估算</b><small>每天目標固定，不用記錄運動</small></label>
+    <label class="gm" for="gModePrecise"><input type="radio" name="gMode" id="gModePrecise" value="precise"><b>精打細算</b><small>有運動紀錄的日子才加熱量</small></label>
+  </div>
   <div id="gPreciseOpts" hidden>
-  <div class="grid2">
-    <div class="field"><label for="gRatio">活動熱量計入比例</label><select id="gRatio"><option value="0.5">50%（保守）</option><option value="0.75" selected>75%</option><option value="1">100%</option></select></div>
+    <div class="field" style="margin-top:10px"><label for="gRatio">活動熱量計入比例</label><select id="gRatio"><option value="0.5">50%（保守）</option><option value="0.75" selected>75%</option><option value="1">100%</option></select></div>
+    <div class="hint" style="margin-top:6px">沒有活動紀錄的日子不會多加。手錶和手機估的活動消耗常偏高，建議計入 75% 或 50%。多出來的熱量依蛋白質、碳水、脂肪的比例分配。</div>
   </div>
-  <div class="hint">沒有活動紀錄的日子不會多加，避免沒運動時高估。手錶和手機估的活動消耗常偏高，建議計入 75% 或 50%。多出來的熱量會依上面蛋白質、碳水、脂肪目標的比例分配。</div>
-  </div>
-  <button class="btn primary" id="goalSave">儲存目標</button>
+  <div class="gsave"><button class="btn primary" id="goalSave" type="button">儲存</button></div>
 </div></div>
 
 <div class="sheet" id="sheetAct" hidden role="dialog" aria-label="活動消耗"><div class="wrap">
@@ -1501,38 +1577,72 @@ $("micBtn").onclick=()=>{
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")stopMic(true)});
 addEventListener("pagehide",()=>stopMic(true));
 
-/* goal */
-$("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{};
-  $("gK").value=g.kcal;$("gP").value=g.p;$("gC").value=g.c;$("gF").value=g.f;$("gFb").value=g.fb!=null?g.fb:25;
-  if(b.sex)$("bSex").value=b.sex; $("bAge").value=b.age||""; $("bH").value=b.h||""; $("bW").value=b.w||""; $("bBf").value=b.bf||""; showLbm();
-  if(b.act)$("bAct").value=b.act; if(b.goal!=null)$("bGoal").value=b.goal; $("calcOut").textContent="";
-  const dyn=profile().dyn||{}; $(isPrecise(dyn)?"gModePrecise":"gModeLazy").checked=true; $("gRatio").value=String(dyn.ratio||0.75); syncActSel(); renderBreak(); show("sheetGoal")};
-/* 精打細算 always uses sedentary as the base, so the activity picker is locked */
+/* goal: one save button; every pick previews the result card right away, saving makes it the goal */
+let lastCalc=null, gManualEdit=false;
 const preciseSel=()=>$("gModePrecise").checked;
-function syncActSel(){const p=preciseSel();$("bActHint").hidden=!p;$("bAct").disabled=p;$("gPreciseOpts").hidden=!p}
-/* switching mode changes the base TDEE, so recalculate right away when the body data allow it */
-for(const id of ["gModeLazy","gModePrecise"]) $(id).addEventListener("change",()=>{
-  syncActSel(); renderBreak();
-  if(profile().calc&&calcInputs())$("calcGo").onclick();
-  else $("calcOut").textContent="切換估算方式後，請填好上面的資料並按「算出並套用建議值」，或按「儲存目標」。";
-});
-let lastCalc=null;
 const ACT_NAME={1.2:"久坐",1.375:"輕度活動",1.55:"中度活動",1.725:"高度活動"};
-/* follows the mode / activity level picked on the goal page, not only the saved
-   calculation: the steps are rebuilt from the saved BMR with the picked factor */
-function renderBreak(){
-  const c=profile().calc, g=profile().goal, el=$("goalBreak");
+const GOAL_NAME={"-500":"減脂","-300":"溫和減脂","0":"維持","250":"增肌"};
+function calcInputs(){
+  const a=+$("bAge").value,h=+$("bH").value,w=+$("bW").value,bf=+$("bBf").value, lbm=bf>=3&&bf<=60&&w?w*(1-bf/100):0;
+  return !w||(!lbm&&(!a||!h))?null:{a,h,w,lbm};
+}
+/* the suggestion from the body data and picks on the page, without saving anything */
+function computeCalc(){
+  const ci=calcInputs(); if(!ci)return null;
+  const prec=preciseSel(), sex=$("bSex").value,{a,h,w,lbm}=ci, act=prec?1.2:+$("bAct").value, adj=+$("bGoal").value;
+  /* with body fat: Katch-McArdle on lean mass; otherwise Mifflin-St Jeor */
+  const bmr=lbm?370+21.6*lbm:10*w+6.25*h-5*a+(sex==="m"?5:-161), tdee=Math.round(bmr*act);
+  const kcal=Math.max(sex==="m"?1500:1200,Math.round((tdee+adj)/10)*10);
+  const p=lbm?Math.round(lbm*(adj<0?2.2:2.0)):Math.round(w*(adj<0?1.8:1.6));
+  const f=Math.round(kcal*0.27/9), c=Math.max(0,Math.round((kcal-p*4-f*9)/4));
+  /* fiber: about 14 g per 1000 kcal, kept within the 25–35 g adult recommendation */
+  const fb=Math.min(35,Math.max(25,Math.round(kcal*14/1000)));
+  return {kcal,p,c,f,fb,tdee,bmr:Math.round(bmr),lbm,
+    calc:{bmr:Math.round(bmr),tdee,factor:act,sel:+$("bAct").value,adj,kcal,formula:lbm?"Katch-McArdle（去脂體重）":"Mifflin-St Jeor",lbm:lbm?r1(lbm):null}};
+}
+function setGoalFields(v){$("gK").value=v.kcal;$("gP").value=v.p;$("gC").value=v.c;$("gF").value=v.f;$("gFb").value=v.fb}
+function syncGoalPicks(){
+  const prec=preciseSel();
+  for(const [box,sel] of [["goalChips","bGoal"],["actChips","bAct"],["sexSeg","bSex"]])
+    for(const b of $(box).children){const on=b.dataset.v===$(sel).value;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)}
+  if(prec)for(const b of $("actChips").children){const on=b.dataset.v==="1.2";b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)}
+  for(const b of $("actChips").children)b.disabled=prec;
+  $("bActHint").hidden=!prec; $("gPreciseOpts").hidden=!prec;
+}
+function gPreview(){
+  const cc=computeCalc(), prec=preciseSel();
+  if(cc&&!gManualEdit)setGoalFields(cc);
+  const k=+$("gK").value||0,p=+$("gP").value||0,c=+$("gC").value||0,f=+$("gF").value||0,fb=+$("gFb").value||0;
+  $("gHeroK").textContent=fmtN(k);
+  const pk=p*4,ck=c*4,fk=f*9,mk=pk+ck+fk||1;
+  [["p",p,pk],["c",c,ck],["f",f,fk]].forEach(([m,g,kk])=>{$("gL"+m).textContent=Math.round(g)+"g";$("gL"+m+"p").textContent=Math.round(kk/mk*100)+"%";$("gS"+m).style.flexGrow=kk});
+  $("gLfb").textContent=Math.round(fb)+"g";
+  /* rough weekly change: daily difference from TDEE × 7 ÷ 7700 kcal per kg */
+  const tdee=cc?cc.tdee:(profile().calc&&profile().calc.tdee)||0;
+  const name=gManualEdit||!cc?"自訂目標":GOAL_NAME[$("bGoal").value];
+  let wk="";
+  if(tdee&&k){const kg=(k-tdee)*7/7700; wk=Math.abs(kg)<0.05?"體重大致維持":`每週約 ${kg<0?"−":"+"}${Math.abs(kg).toFixed(1)} kg`; if(prec)wk+="（沒運動的日子）"}
+  $("gHeroSub").textContent=[name,wk].filter(Boolean).join(" · ");
+  const off=Math.round(pk+ck+fk-k);
+  $("gWarn").hidden=!(k&&Math.abs(off)>k*0.08);
+  $("gWarn").textContent=`三大營養素合計約 ${fmtN(pk+ck+fk)} kcal，比目標${off>0?"多":"少"} ${fmtN(Math.abs(off))} kcal。`;
+  const o=$("calcOut");
+  if(cc){o.innerHTML=`${cc.lbm?`去脂體重 <b>${r1(cc.lbm)}</b> kg · `:""}基礎代謝 <b>${fmtN(cc.bmr)}</b> kcal · ${prec?"久坐時":""}每日消耗 <b>${fmtN(cc.tdee)}</b> kcal`}
+  else o.textContent="填好年齡、身高、體重（或體重＋體脂率），就能算出建議值。";
+  renderBreak(cc);
+}
+/* the steps behind the suggestion currently on screen */
+function renderBreak(cc){
+  const g=profile().goal, el=$("goalBreak"), c=cc?cc.calc:profile().calc;
   if(!c){$("goalBreakWrap").hidden=true;return}
-  const prec=preciseSel(), ratio=+$("gRatio").value||0.75, adj=+$("bGoal").value;
-  const factor=prec?1.2:+$("bAct").value, stale=factor!==c.factor||adj!==c.adj;
-  const tdee=stale?Math.round(c.bmr*factor):c.tdee, kcal=stale?Math.max($("bSex").value==="m"?1500:1200,Math.round((tdee+adj)/10)*10):c.kcal;
+  const prec=preciseSel(), ratio=+$("gRatio").value||0.75, adj=c.adj;
   const rows=[
     ["估算方式",prec?"精打細算":"懶人估算",prec?"平常以久坐計算，運動另外加":"活動量已算進 TDEE，每天目標固定"],
     ["基礎代謝 BMR",`${c.bmr} kcal`,c.formula+(c.lbm?`，去脂體重 ${c.lbm} kg`:"")],
-    ["× 活動係數",`${factor}`,(ACT_NAME[factor]||"")+(prec?"（精打細算固定用久坐）":"")],
-    ["＝ 每日消耗 TDEE",`${tdee} kcal`,""],
+    ["× 活動係數",`${c.factor}`,(ACT_NAME[c.factor]||"")+(prec?"（精打細算固定用久坐）":"")],
+    ["＝ 每日消耗 TDEE",`${c.tdee} kcal`,""],
     [adj<0?"− 減脂赤字":adj>0?"＋ 增肌盈餘":"± 維持",`${adj<0?"−":adj>0?"+":""}${Math.abs(adj)} kcal`,""],
-    ["＝ 每日基礎目標",`${kcal} kcal`,kcal-(tdee+adj)>10?"已調整到最低建議攝取量":"取整到 10 kcal"]
+    ["＝ 每日基礎目標",`${c.kcal} kcal`,c.kcal-(c.tdee+adj)>10?"已調整到最低建議攝取量":"取整到 10 kcal"]
   ];
   if(prec){
     rows.push(["＋ 有活動紀錄的日子",`活動消耗 × ${Math.round(ratio*100)}%`,"依健康 App 或手動輸入每天另外加上"]);
@@ -1547,36 +1657,31 @@ function renderBreak(){
     if(n){const s=document.createElement("small");s.textContent=n;r.append(s)}
     el.append(r);
   }
-  if(stale){const m=document.createElement("div");m.className="hint";m.textContent=`上面是依目前選擇的估算方式算出的數字，按「算出並套用建議值」後才會成為每日目標（目前是 ${g.kcal} kcal）。`;el.append(m)}
-  else if(c.kcal!==g.kcal){const m=document.createElement("div");m.className="hint";m.textContent=`目前目標已手動改成 ${g.kcal} kcal。`;el.append(m)}
+  const note=gManualEdit?`目前用手動修改的數字（${fmtN(+$("gK").value||0)} kcal），上面是建議值的算法。`
+    :c.kcal!==g.kcal?`按「儲存」後才會成為每日目標（目前是 ${fmtN(g.kcal)} kcal）。`:"";
+  if(note){const m=document.createElement("div");m.className="hint";m.textContent=note;el.append(m)}
   $("goalBreakWrap").hidden=false;
 }
-function showLbm(){const w=+$("bW").value,bf=+$("bBf").value;$("bLbm").value=w&&bf>=3&&bf<=60?r1(w*(1-bf/100))+" kg":""}
-$("bW").addEventListener("input",showLbm);
-$("bBf").addEventListener("input",showLbm);
-for(const id of ["bAct","bGoal","bSex","gRatio"]) $(id).addEventListener("change",renderBreak);
-function calcInputs(){
-  const a=+$("bAge").value,h=+$("bH").value,w=+$("bW").value,bf=+$("bBf").value, lbm=bf>=3&&bf<=60&&w?w*(1-bf/100):0;
-  return !w||(!lbm&&(!a||!h))?null:{a,h,w,lbm};
-}
-$("calcGo").onclick=()=>{
-  const dynOn=preciseSel(), ci=calcInputs();
-  if(!ci){$("calcOut").textContent="請先填體重，以及體脂率或「年齡＋身高」。";return}
-  const sex=$("bSex").value,{a,h,w,lbm}=ci,act=dynOn?1.2:+$("bAct").value,adj=+$("bGoal").value;
-  /* with body fat: Katch-McArdle on lean mass; otherwise Mifflin-St Jeor */
-  const bmr=lbm?370+21.6*lbm:10*w+6.25*h-5*a+(sex==="m"?5:-161), tdee=Math.round(bmr*act);
-  const kcal=Math.max(sex==="m"?1500:1200,Math.round((tdee+adj)/10)*10);
-  const p=lbm?Math.round(lbm*(adj<0?2.2:2.0)):Math.round(w*(adj<0?1.8:1.6));
-  const f=Math.round(kcal*0.27/9), c=Math.max(0,Math.round((kcal-p*4-f*9)/4));
-  $("gK").value=kcal;$("gP").value=p;$("gC").value=c;$("gF").value=f;
-  /* fiber: about 14 g per 1000 kcal, kept within the 25–35 g adult recommendation */
-  $("gFb").value=Math.min(35,Math.max(25,Math.round(kcal*14/1000)));
-  $("calcOut").textContent=(lbm?`依體脂率計算：去脂體重約 ${r1(lbm)} kg，`:"")+`基礎代謝約 ${Math.round(bmr)} kcal，${dynOn?"久坐時":""}每日消耗約 ${tdee} kcal。`
-    +(lbm?`蛋白質依去脂體重每公斤 ${adj<0?2.2:2.0} g 計算。`:"")+`已套用為每日目標 ${kcal} kcal${dynOn?"，活動消耗會每天另外加上去":""}。`;
-  lastCalc={bmr:Math.round(bmr),tdee,factor:act,sel:+$("bAct").value,adj,kcal,formula:lbm?"Katch-McArdle（去脂體重）":"Mifflin-St Jeor",lbm:lbm?r1(lbm):null};
-  saveGoal(); renderBreak(); toast(`已套用：每日 ${kcal} kcal`);
-  $("gK").scrollIntoView({block:"center",behavior:"smooth"});
-};
+$("openGoal").onclick=()=>{const g=profile().goal,b=profile().body||{},dyn=profile().dyn||{};
+  lastCalc=null; setGoalFields({kcal:g.kcal,p:g.p,c:g.c,f:g.f,fb:g.fb!=null?g.fb:25});
+  $("bSex").value=b.sex||"m"; $("bAge").value=b.age||""; $("bH").value=b.h||""; $("bW").value=b.w||""; $("bBf").value=b.bf||"";
+  $("bfWrap").hidden=!b.bf; $("bfAdd").hidden=!!b.bf;
+  $("bAct").value=b.act||"1.375"; $("bGoal").value=b.goal!=null?String(b.goal):"-300";
+  $(isPrecise(dyn)?"gModePrecise":"gModeLazy").checked=true; $("gRatio").value=String(dyn.ratio||0.75);
+  /* the saved goal counts as hand-made when it differs from what the saved body data suggest */
+  const cc=computeCalc();
+  gManualEdit=!cc||["kcal","p","c","f","fb"].some(k=>Math.round(cc[k])!==Math.round(+g[k]||0));
+  $("gManual").hidden=true; $("gEditBtn").setAttribute("aria-expanded","false");
+  syncGoalPicks(); gPreview(); show("sheetGoal"); $("sheetGoal").scrollTop=0};
+function goalPicked(){gManualEdit=false;syncGoalPicks();gPreview()}
+for(const [box,sel] of [["goalChips","bGoal"],["actChips","bAct"],["sexSeg","bSex"]])
+  $(box).addEventListener("click",e=>{const b=e.target.closest("button[data-v]");if(!b||b.disabled)return;$(sel).value=b.dataset.v;goalPicked()});
+for(const id of ["bAge","bH","bW","bBf"]) $(id).addEventListener("input",goalPicked);
+for(const id of ["gModeLazy","gModePrecise"]) $(id).addEventListener("change",goalPicked);
+$("gRatio").addEventListener("change",()=>renderBreak(computeCalc()));
+for(const id of ["gK","gP","gC","gF","gFb"]) $(id).addEventListener("input",()=>{gManualEdit=true;gPreview()});
+$("gEditBtn").onclick=()=>{const open=$("gManual").hidden;$("gManual").hidden=!open;$("gEditBtn").setAttribute("aria-expanded",open);if(open)$("gK").focus()};
+$("bfAdd").onclick=()=>{$("bfWrap").hidden=false;$("bfAdd").hidden=true;$("bBf").focus()};
 function saveGoal(){
   const goal={kcal:Math.max(800,+$("gK").value||1800),p:+$("gP").value||0,c:+$("gC").value||0,f:+$("gF").value||0,fb:+$("gFb").value||0};
   /* keep the last calculation; the breakdown notes when the goal was changed by hand afterwards */
@@ -1586,7 +1691,11 @@ function saveGoal(){
     dyn:{on:preciseSel(),mode:preciseSel()?"precise":"lazy",ratio:+$("gRatio").value||0.75}};
   cache.dirtyProfile=true; saveCache(); render(); sync();
 }
-$("goalSave").onclick=()=>{saveGoal();hide();toast("目標已更新")};
+$("goalSave").onclick=()=>{
+  const cc=computeCalc();
+  if(cc&&!gManualEdit){setGoalFields(cc);lastCalc=cc.calc}
+  saveGoal(); hide(); toast(`目標已更新：每日 ${fmtN(profile().goal.kcal)} kcal`);
+};
 
 /* settings */
 function openSettings(){
