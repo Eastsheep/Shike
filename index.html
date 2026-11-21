@@ -156,6 +156,8 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .linkbtn{border:0;background:none;color:var(--accent);font-weight:500;padding:4px 0}
 .portion{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
 .sheet .wrap>*,#manualChips>*{min-width:0}
+.sheet .mback{border:0;background:none;font-size:26px;line-height:1;color:var(--muted);min-width:32px;padding:0 8px 0 0;margin-left:-4px}
+.mcustom{justify-self:center;padding:6px 8px;font-size:14px}
 .rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .mylist{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
 .myf{position:relative;flex:none;width:96px;scroll-snap-align:start;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px;text-align:left;display:grid;gap:4px}
@@ -465,7 +467,7 @@ main.isEmpty .ring .lbl{font-size:10px}
 </div></div>
 
 <div class="sheet" id="sheetManual" hidden role="dialog" aria-label="手動紀錄"><div class="wrap">
-  <div class="sh"><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div class="sh"><button class="iconbtn mback" id="mBack" type="button" hidden aria-label="回到選食物">‹</button><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
   <div id="manualChips" style="display:grid;gap:12px">
     <div id="myWrap" hidden>
       <div class="rowhead"><span class="hint">我的食物</span><button type="button" class="linkbtn" id="myManage">管理</button></div>
@@ -473,8 +475,9 @@ main.isEmpty .ring .lbl{font-size:10px}
     </div>
     <div id="recentWrap" hidden><div class="hint" style="margin-bottom:6px">最近吃過</div><div class="chips" id="recentChips"></div></div>
     <div class="field"><label for="fSearch">從台灣常見食物清單找</label><input id="fSearch" type="search" placeholder="搜尋，例如：雞胸肉、珍奶、滷肉飯" autocomplete="off"></div>
-    <div class="chips" id="fCats" hidden></div>
-    <div class="flist" id="fList" hidden></div>
+    <div class="chips" id="fCats"></div>
+    <div class="flist" id="fList"></div>
+    <button type="button" class="linkbtn mcustom" id="mCustom">清單找不到？自己輸入熱量 ›</button>
   </div>
   <form id="manualForm" style="display:grid;gap:10px">
     <div class="picked" id="fPicked" hidden><span>已選：<b id="fPickedName"></b></span><button type="button" class="linkbtn" id="fClear">改成自訂</button></div>
@@ -1393,12 +1396,26 @@ function pickFood(f,q,lab){
   selFood=f; selMy=null; $("mName").value=f.n; fillUnits(lab||f.sl); $("mQty").value=q||1; recalc();
   $("fPicked").hidden=false; $("fPickedName").textContent=f.n;
   $("mCalcHint").hidden=false; $("mCalcHint").textContent="熱量和營養素會依份量自動換算，也可以直接修改數字。";
-  showFoodList(false); $("fSearch").blur();
-  $("fPicked").scrollIntoView({block:"start",behavior:"smooth"});
+  $("fSearch").blur(); manualStep(2);
 }
-/* the list only shows while searching, so the portion and nutrient fields stay in view */
-function showFoodList(on){$("fCats").hidden=!on;$("fList").hidden=!on;if(on){renderCats();renderFoods()}}
-$("fSearch").addEventListener("focus",()=>showFoodList(true));
+/* two steps: 1 = pick a food (lists + search), 2 = confirm the amount and numbers; editing opens straight at step 2 */
+function manualStep(n){
+  $("manualChips").hidden=n!==1; $("manualForm").hidden=n!==2;
+  $("mBack").hidden=n!==2||!!editingId;
+  $("manualTitle").textContent=editingId?"編輯食物":n===2?"確認份量":"手動紀錄";
+  $("sheetManual").scrollTop=0;
+}
+function customFood(name){
+  clearFood(); setMPhoto(null); $("mName").value=name||""; manualStep(2);
+  setTimeout(()=>$(name?"mK":"mName").focus(),50);
+}
+/* bring the search box to the top so the results are not hidden under the keyboard */
+$("fSearch").addEventListener("focus",()=>setTimeout(()=>$("fSearch").scrollIntoView({block:"start",behavior:"smooth"}),300));
+$("mCustom").onclick=()=>customFood($("fSearch").value.trim());
+$("mBack").onclick=()=>{
+  const meal=$("mMeal").value; $("manualForm").reset(); $("mMeal").value=meal;
+  clearFood(); setMPhoto(null); manualStep(1);
+};
 function clearFood(lab){selFood=null;selMy=null;$("fPicked").hidden=true;$("mCalcHint").hidden=true;fillUnits(lab||"份")}
 $("fClear").onclick=()=>clearFood();
 $("mQty").addEventListener("input",recalc);
@@ -1426,9 +1443,9 @@ function renderFoods(){
     b.querySelector(".fn").textContent=f.name;
     b.querySelector(".fs").textContent=f.portion||"自訂份量";
     b.querySelector(".fk").textContent=f.kcal+" kcal";
-    b.onclick=()=>{showFoodList(false);$("fSearch").blur();useMy(f)}; box.append(b);
+    b.onclick=()=>{$("fSearch").blur();useMy(f)}; box.append(b);
   }
-  if(!list.length&&!mine.length){const d=document.createElement("div");d.className="none";d.textContent="清單裡沒有這個食物，可以直接在下面自己填，或改用「描述」讓 AI 估算。";box.append(d);return}
+  if(!list.length&&!mine.length){const d=document.createElement("div");d.className="none";d.textContent="清單裡沒有這個食物，可以點下面「自己輸入熱量」，或改用「描述」讓 AI 估算。";box.append(d);return}
   for(const f of list.slice(0,80)){
     const b=document.createElement("button");b.type="button";b.className="frow";
     b.innerHTML=`<span><span class="fn"></span><br><span class="fs"></span></span><span class="fk"></span>`;
@@ -1472,13 +1489,12 @@ function useMy(f){
   setMPhoto(f.photo||null);
   $("mSaveMy").checked=false;   /* already saved; checking it again would replace the saved amount */
   $("mCalcHint").hidden=false; $("mCalcHint").textContent="已帶入「我的食物」，改數量會依比例換算。";
-  $("mName").scrollIntoView({block:"center",behavior:"smooth"});
+  manualStep(2);
 }
 const findFood=n=>FOODS.find(f=>f.n===n);
 function manualMode(edit){
   editingId=edit||null;
-  $("manualTitle").textContent=edit?"編輯食物":"手動紀錄";
-  $("manualChips").hidden=!!edit; $("mDelete").hidden=!edit;
+  $("mDelete").hidden=!edit;
   $("mSubmit").textContent=edit?"儲存修改":"加入紀錄";
 }
 function openEdit(id){
@@ -1491,7 +1507,7 @@ function openEdit(id){
   fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f),it.fb);
   setMPhoto(it.photo||null);
   $("mSaveMy").checked=myList().some(f=>f.name===it.name);
-  show("sheetManual");
+  show("sheetManual"); manualStep(2);
 }
 /* photo picked in the manual / edit sheet: kept as a file until the form is saved */
 let mPh={id:null,file:null,removed:false}, mPhUrl=null;
@@ -1530,18 +1546,18 @@ $("toManual").onclick=()=>$("addManual").onclick();
 $("addManual").onclick=()=>{
   $("manualForm").reset(); manualMode(null); clearFood(); setMPhoto(null);
   mealSelect($("mMeal"));
-  $("fSearch").value=""; showFoodList(false);
+  $("fSearch").value=""; fCat="全部"; renderCats(); renderFoods();
   const seen=new Map();
   Object.keys(cache.days).sort().reverse().slice(0,14).forEach(k=>(cache.days[k]||[]).slice().reverse().forEach(i=>{if(!seen.has(i.name)&&seen.size<10)seen.set(i.name,i)}));
   const rc=$("recentChips"); rc.textContent="";
   seen.forEach(i=>rc.append(chip(i.name,Math.round(i.kcal),()=>{
     const f=i.fn&&findFood(i.fn);
     if(f){pickFood(f,i.q,i.u);fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb)}
-    else{clearFood(i.u);$("mQty").value=i.q?fmtQ(i.q):"";fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb)}
+    else{clearFood(i.u);$("mQty").value=i.q?fmtQ(i.q):"";fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb);manualStep(2)}
   })));
   $("recentWrap").hidden=!seen.size;
   myManaging=false; renderMy();
-  show("sheetManual");
+  show("sheetManual"); manualStep(1);
   clampRows(rc,3);
 };
 /* keep only the chips on the first n wrapped rows */
