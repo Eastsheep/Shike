@@ -167,8 +167,8 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 #sheetManual .chip.on{box-shadow:none}
 .mlist{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
 .mlist .none{padding:14px 16px;font-size:13px;color:var(--muted)}
-.mrow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
-.mrow:last-child{border-bottom:0}
+.prow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
 .mmain{flex:1;min-width:0;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;border:0;background:none;text-align:left;padding:9px 4px 9px 14px}
 .mmain:active{background:var(--accent-soft)}
 .mmain .mono{width:40px;height:40px;border-radius:11px;font-size:18px;overflow:hidden}
@@ -1582,7 +1582,7 @@ function thumbFor(name,photo){
 }
 /* o: {name,sub,kcal,photo,tag,open,add,del} */
 function pickRow(o){
-  const r=document.createElement("div"); r.className="mrow";
+  const r=document.createElement("div"); r.className="prow";
   const m=document.createElement("button"); m.type="button"; m.className="mmain";
   const t=document.createElement("span"); t.className="mt";
   const n=document.createElement("span"); n.className="mn"; n.textContent=o.name;
