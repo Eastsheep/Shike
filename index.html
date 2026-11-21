@@ -143,9 +143,10 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .meal .mhead .mt{font-size:17px;font-weight:700}
 .meal .mhead .tot{color:var(--muted);font-size:13px}
 .meal .mhead .addin{margin-left:auto;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:20px;line-height:30px;text-align:center;flex:none}
-.meal .mhead:hover .addin{background:var(--accent);color:var(--accent-ink)}
 .meal li.it{cursor:pointer}
-.meal li.it:hover{background:var(--accent-soft)}
+.meal li.it:focus:not(:focus-visible){outline:0}
+@media (hover:hover) and (pointer:fine){.meal .mhead:hover .addin{background:var(--accent);color:var(--accent-ink)}
+.meal li.it:hover{background:var(--accent-soft)}}  /* mouse only: on phones :hover sticks after a tap and looks like a highlight */
 .meal .empty{cursor:pointer}
 .pick{display:grid;gap:8px}
 .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -174,7 +175,6 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .prow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
 .prow:last-child{border-bottom:0}
 .mmain{flex:1;min-width:0;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;border:0;background:none;text-align:left;padding:9px 4px 9px 14px}
-.mmain:active{background:var(--accent-soft)}
 .mmain .mono{width:40px;height:40px;border-radius:11px;font-size:18px;overflow:hidden}
 .mono img{width:100%;height:100%;object-fit:cover}
 .mt{min-width:0;display:grid}
