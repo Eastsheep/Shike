@@ -157,6 +157,9 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .portion{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
 .sheet .wrap>*,#manualChips>*{min-width:0}
 .sheet .mback{border:0;background:none;font-size:26px;line-height:1;color:var(--muted);min-width:32px;padding:0 8px 0 0;margin-left:-4px}
+.gseg.mseg{grid-template-columns:repeat(4,1fr);background:var(--line)}
+.gsave.msave{margin-top:0}
+.msave .btn small{font-weight:500;opacity:.85;margin-left:6px;font-size:15px}
 .mcustom{justify-self:center;padding:6px 8px;font-size:14px}
 .rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .mylist{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
@@ -468,6 +471,7 @@ main.isEmpty .ring .lbl{font-size:10px}
 
 <div class="sheet" id="sheetManual" hidden role="dialog" aria-label="手動紀錄"><div class="wrap">
   <div class="sh"><button class="iconbtn mback" id="mBack" type="button" hidden aria-label="回到選食物">‹</button><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div class="gseg mseg" id="mMealSeg" role="group" aria-label="餐別"><button type="button" data-v="b">早餐</button><button type="button" data-v="l">午餐</button><button type="button" data-v="d">晚餐</button><button type="button" data-v="s">點心</button></div>
   <div id="manualChips" style="display:grid;gap:12px">
     <div id="myWrap" hidden>
       <div class="rowhead"><span class="hint">我的食物</span><button type="button" class="linkbtn" id="myManage">管理</button></div>
@@ -503,10 +507,8 @@ main.isEmpty .ring .lbl{font-size:10px}
       <div class="field"><label for="mFb">膳食纖維 g</label><input id="mFb" type="number" inputmode="decimal" min="0" step="0.1"></div>
     </div>
     <label class="check" for="mSaveMy"><input type="checkbox" id="mSaveMy">存到「我的食物」，下次可以直接選（含照片）</label>
-    <div class="actions">
-      <div class="field"><label for="mMeal">餐別</label><select id="mMeal"></select></div>
-      <button class="btn primary" type="submit" id="mSubmit">加入紀錄</button>
-    </div>
+    <select id="mMeal" hidden aria-hidden="true" tabindex="-1"></select>
+    <div class="gsave msave"><button class="btn primary" type="submit" id="mSubmit">加入紀錄</button></div>
     <button class="btn" type="button" id="mDelete" hidden style="color:var(--warn)">刪除這項</button>
   </form>
 </div></div>
@@ -1367,7 +1369,7 @@ function showLabel(target,L){
 }
 
 /* manual */
-function fill(n,k,p,c,f,fb){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mFb").value=r1(fb)}
+function fill(n,k,p,c,f,fb){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mFb").value=r1(fb);updSubmit()}
 function chip(label,k,onclick){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;const s=document.createElement("span");s.textContent=k;b.append(s);b.onclick=onclick;return b}
 const fmtQ=q=>String(q>=10?Math.round(q):r1(q));
 let editingId=null, selFood=null, units=[], unitIdx=0, fCat="全部";
@@ -1403,8 +1405,17 @@ function manualStep(n){
   $("manualChips").hidden=n!==1; $("manualForm").hidden=n!==2;
   $("mBack").hidden=n!==2||!!editingId;
   $("manualTitle").textContent=editingId?"編輯食物":n===2?"確認份量":"手動紀錄";
-  $("sheetManual").scrollTop=0;
+  $("sheetManual").scrollTop=0; syncMeal();
 }
+/* meal segment mirrors the hidden select; the submit button names the meal and the kcal being added */
+function syncMeal(){for(const b of $("mMealSeg").children){const on=b.dataset.v===$("mMeal").value;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)};updSubmit()}
+function updSubmit(){
+  const m=MEALS.find(x=>x[0]===$("mMeal").value), k=Math.round(+$("mK").value||0), btn=$("mSubmit");
+  btn.textContent=editingId?"儲存修改":"加入"+(m?m[1]:"紀錄");
+  if(k>0){const sm=document.createElement("small");sm.className="num";sm.textContent=fmtN(k)+" kcal";btn.append(sm)}
+}
+for(const b of $("mMealSeg").children) b.onclick=()=>{$("mMeal").value=b.dataset.v;syncMeal()};
+$("mK").addEventListener("input",updSubmit);
 function customFood(name){
   clearFood(); setMPhoto(null); $("mName").value=name||""; manualStep(2);
   setTimeout(()=>$(name?"mK":"mName").focus(),50);
@@ -1495,7 +1506,6 @@ const findFood=n=>FOODS.find(f=>f.n===n);
 function manualMode(edit){
   editingId=edit||null;
   $("mDelete").hidden=!edit;
-  $("mSubmit").textContent=edit?"儲存修改":"加入紀錄";
 }
 function openEdit(id){
   const it=(cache.days[state.date]||[]).find(i=>i.id===id); if(!it)return;
