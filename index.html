@@ -145,29 +145,87 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .meal .empty{cursor:pointer}
 .pick{display:grid;gap:8px}
 .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.flist{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
-.frow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;padding:10px 12px}
-.frow:last-child{border-bottom:0}
-.frow:hover,.frow:focus-visible{background:var(--accent-soft)}
-.frow .fs{font-size:12px;color:var(--muted)}
-.frow .fk{font-family:var(--f-num);font-size:13px;white-space:nowrap}
-.flist .none{padding:12px;font-size:13px;color:var(--muted)}
-.picked{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--accent-soft);border-radius:10px;padding:8px 12px;font-size:14px}
 .linkbtn{border:0;background:none;color:var(--accent);font-weight:500;padding:4px 0}
 .portion{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
-.sheet .wrap>*,#manualChips>*{min-width:0}
-.rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.mylist{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity}
-.myf{position:relative;flex:none;width:96px;scroll-snap-align:start;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px;text-align:left;display:grid;gap:4px}
-.myf .ph{width:100%;aspect-ratio:1;border-radius:8px;object-fit:cover;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;color:var(--accent);font-family:var(--f-display);font-size:24px;overflow:hidden}
-.myf .ph img{width:100%;height:100%;object-fit:cover}
-.myf .n{font-size:12px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:2.6em}
-.myf .k{font-family:var(--f-num);font-size:11px;color:var(--muted)}
-.myf .x{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:var(--warn);color:#fff;font-size:14px;line-height:1}
+.sheet .wrap>*,#manualChips>*,.mform>*{min-width:0}
+.sheet .mback{border:0;background:none;font-size:26px;line-height:1;color:var(--muted);min-width:32px;padding:0 8px 0 0;margin-left:-4px}
+.gseg.mseg{grid-template-columns:repeat(4,1fr);background:var(--line)}
+.gsave.msave{margin-top:0}
+.msave .btn small{font-weight:500;opacity:.85;margin-left:6px;font-size:15px}
+.mcustom{justify-self:center;padding:6px 8px;font-size:14px}
+/* manual sheet: shadow cards, no borders (matches the home screen) */
+.mpick,.mform{display:grid;gap:12px}
+.msearch{display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:14px;padding:0 14px;box-shadow:var(--shadow);color:var(--muted)}
+.msearch svg{width:18px;height:18px;flex:none}
+.msearch input{border:0;background:none;outline:0;min-height:46px;width:100%;min-width:0;font-size:16px;color:var(--ink)}
+.msearch:focus-within{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+.mtabs{display:flex;align-items:center;gap:18px;padding:0 2px}
+.mtabs [data-t]{border:0;background:none;padding:4px 0;font-size:14px;color:var(--muted);border-bottom:2px solid transparent}
+.mtabs [data-t].on{color:var(--ink);font-weight:700;border-bottom-color:var(--accent)}
+.mtabs #myManage{margin-left:auto;font-size:13px}
+#sheetManual .chip{border:0;box-shadow:var(--shadow)}
+#sheetManual .chip.on{box-shadow:none}
+.mlist{background:var(--surface);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.mlist .none{padding:14px 16px;font-size:13px;color:var(--muted)}
+.mrow{display:flex;align-items:center;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mmain{flex:1;min-width:0;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;border:0;background:none;text-align:left;padding:9px 4px 9px 14px}
+.mmain:active{background:var(--accent-soft)}
+.mmain .mono{width:40px;height:40px;border-radius:11px;font-size:18px;overflow:hidden}
+.mono img{width:100%;height:100%;object-fit:cover}
+.mt{min-width:0;display:grid}
+.mn{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ms{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mmain .kc{font-weight:700;font-size:14px;white-space:nowrap}
+.mmain .kc small{font-weight:400;color:var(--muted);font-size:11px;margin-left:2px}
+.madd{flex:none;width:30px;height:30px;margin:0 14px 0 8px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
+.madd.done{background:var(--accent);color:var(--accent-ink);font-size:15px}
+.madd.del{background:var(--warn);color:#fff;font-size:16px}
+.mcard{background:var(--surface);border-radius:20px;box-shadow:var(--shadow)}
+.mfood{padding:14px 16px 12px}
+.mhead{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center}
+.mthumb{position:relative;width:60px;height:60px;cursor:pointer}
+.mthumb .mono{width:60px;height:60px;border-radius:16px;font-size:26px}
+.mthumb img{width:60px;height:60px;border-radius:16px;object-fit:cover;display:block}
+.mthumb .cam{position:absolute;right:-5px;bottom:-5px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.mthumb .cam svg{width:13px;height:13px}
+.minfo{min-width:0}
+.mname{width:100%;border:0;background:none;padding:2px 0;font-size:18px;font-weight:700;color:var(--ink);border-bottom:1px dashed transparent;border-radius:0}
+.mname:focus{outline:0;border-bottom-color:var(--accent)}
+.mname::placeholder{font-weight:400;font-size:15px}
+.msub{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center}
+.msub .linkbtn{font-size:12px;padding:2px 0}
+.mbig{display:flex;align-items:baseline;justify-content:center;gap:4px;padding:10px 0 4px}
+.mbig b{font-size:42px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.mbig span{color:var(--muted)}
+.mmacs{display:grid;grid-template-columns:repeat(4,1fr);text-align:center;padding-top:8px;font-size:12px;color:var(--muted)}
+.mmacs b{display:block;color:var(--ink);font-size:15px;font-weight:700}
+.mmacs i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+.mqty{padding:14px 16px;display:grid;gap:12px}
+.mstep{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:10px}
+.mstep .sb{width:44px;height:44px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);font-size:24px;line-height:1}
+.mstep .sv{display:flex;align-items:baseline;justify-content:center;gap:6px;min-width:0}
+.mstep input{width:4.2em;border:0;background:none;text-align:right;font-size:30px;font-weight:700;padding:0;font-family:var(--f-num);font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.mstep input::-webkit-inner-spin-button,.mstep input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.mstep input:focus{outline:0;box-shadow:0 2px 0 var(--accent)}
+.mstep #mUnitLab{font-size:16px;color:var(--muted);flex:1;min-width:0;white-space:nowrap}
+.mquick,.munits{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.munits{flex-wrap:nowrap;overflow-x:auto;justify-content:safe center;scrollbar-width:none;padding-bottom:2px}
+.mquick button,.munits button{flex:none;border:0;border-radius:999px;padding:5px 14px;font-size:14px;background:var(--bg);color:var(--ink)}
+.munits button{color:var(--muted)}
+.mquick button.on{background:var(--ink);color:var(--bg)}
+.munits button.on{background:var(--accent);color:var(--accent-ink)}
+.mqty .hint{text-align:center}
+.mfold{padding:0 16px}
+.mfold summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:14px 0;font-size:14px}
+.mfold summary::-webkit-details-marker{display:none}
+.mfold summary::after{content:"";width:7px;height:7px;border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:rotate(-45deg);transition:transform .15s}
+.mfold[open] summary::after{transform:rotate(45deg)}
+.mfold .grid4{padding-bottom:16px}
+#sheetManual .mfold .field input{border:0;background:var(--bg)}
+.msavemy{padding:0 4px;color:var(--muted)}
+.mdel{border:0;background:none;color:var(--warn)}
 .tag.my{background:color-mix(in srgb,var(--carb) 16%,transparent);color:var(--carb)}
-.photopick{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.photopick img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
-.photopick .btn{min-height:40px;cursor:pointer}
 .mono{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:20px;flex:none}
 .thumb{width:46px;height:46px;border-radius:12px;object-fit:cover;background:var(--accent-soft);cursor:zoom-in;display:block}
 .viewer{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -274,7 +332,7 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .actions .btn{flex:2 1 160px}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--ink);color:var(--bg);border-radius:14px;box-shadow:0 10px 24px -10px rgba(0,0,0,.5);padding:10px 14px;font-size:14px;display:flex;gap:12px;align-items:center;max-width:calc(100% - 32px)}
-.toast button{border:0;background:none;color:var(--bg);font-weight:700;text-decoration:underline}
+.toast button{white-space:nowrap;border:0;background:none;color:var(--bg);font-weight:700;text-decoration:underline}
 
 @media (max-width:400px){.summary{grid-template-columns:112px 1fr;gap:14px}.ring{width:112px;height:112px}.ring .big{font-size:24px}.grid4{grid-template-columns:1fr 1fr}}
 
@@ -465,46 +523,55 @@ main.isEmpty .ring .lbl{font-size:10px}
 </div></div>
 
 <div class="sheet" id="sheetManual" hidden role="dialog" aria-label="手動紀錄"><div class="wrap">
-  <div class="sh"><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
-  <div id="manualChips" style="display:grid;gap:12px">
-    <div id="myWrap" hidden>
-      <div class="rowhead"><span class="hint">我的食物</span><button type="button" class="linkbtn" id="myManage">管理</button></div>
-      <div class="mylist" id="myList"></div>
-    </div>
-    <div id="recentWrap" hidden><div class="hint" style="margin-bottom:6px">最近吃過</div><div class="chips" id="recentChips"></div></div>
-    <div class="field"><label for="fSearch">從台灣常見食物清單找</label><input id="fSearch" type="search" placeholder="搜尋，例如：雞胸肉、珍奶、滷肉飯" autocomplete="off"></div>
+  <div class="sh"><button class="iconbtn mback" id="mBack" type="button" hidden aria-label="回到選食物">‹</button><h3 id="manualTitle">手動紀錄</h3><button class="iconbtn" data-close aria-label="關閉">✕</button></div>
+  <div class="gseg mseg" id="mMealSeg" role="group" aria-label="餐別"><button type="button" data-v="b">早餐</button><button type="button" data-v="l">午餐</button><button type="button" data-v="d">晚餐</button><button type="button" data-v="s">點心</button></div>
+  <div id="manualChips" class="mpick">
+    <div class="msearch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="fSearch" type="search" placeholder="搜尋食物，例如：滷肉飯、珍奶" autocomplete="off" aria-label="搜尋台灣常見食物"></div>
+    <div class="mtabs" id="mTabs" role="tablist"><button type="button" role="tab" data-t="recent">最近吃過</button><button type="button" role="tab" data-t="my">我的食物</button><button type="button" role="tab" data-t="cat">分類瀏覽</button><button type="button" class="linkbtn" id="myManage" hidden>管理</button></div>
     <div class="chips" id="fCats" hidden></div>
-    <div class="flist" id="fList" hidden></div>
+    <div class="mlist" id="fList"></div>
+    <button type="button" class="linkbtn mcustom" id="mCustom">清單找不到？自己輸入熱量 ›</button>
   </div>
-  <form id="manualForm" style="display:grid;gap:10px">
-    <div class="picked" id="fPicked" hidden><span>已選：<b id="fPickedName"></b></span><button type="button" class="linkbtn" id="fClear">改成自訂</button></div>
-    <div class="field"><label for="mName">食物名稱</label><input id="mName" required placeholder="例如：雞胸肉便當"></div>
-    <div class="portion">
-      <div class="field"><label for="mQty">數量</label><input id="mQty" type="number" inputmode="decimal" min="0" step="any" placeholder="1"></div>
-      <div class="field"><label for="mUnit">單位</label><select id="mUnit"></select></div>
-    </div>
-    <div class="hint" id="mCalcHint" hidden>熱量和營養素會依份量自動換算，也可以直接修改數字。</div>
-    <div class="field"><label for="mPhotoIn">照片（選填）</label>
-      <div class="photopick">
-        <img id="mPhotoPrev" alt="這項食物的照片" hidden>
-        <label class="btn" for="mPhotoIn" id="mPhotoBtn">加入照片</label>
-        <button type="button" class="linkbtn" id="mPhotoDel" hidden>移除照片</button>
+  <form id="manualForm" class="mform">
+    <div class="mcard mfood">
+      <div class="mhead">
+        <label class="mthumb" for="mPhotoIn" aria-label="加入或更換照片"><span id="mThumb"></span><img id="mPhotoPrev" alt="這項食物的照片" hidden><i class="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></i></label>
+        <div class="minfo">
+          <input id="mName" class="mname" required placeholder="食物名稱，例如：雞胸肉便當" aria-label="食物名稱" autocomplete="off">
+          <div class="msub"><span id="mSrc"></span><span id="fPicked" hidden>・<button type="button" class="linkbtn" id="fClear">改成自訂</button></span><span id="fPickedName" hidden></span><button type="button" class="linkbtn" id="mPhotoDel" hidden>・移除照片</button></div>
+        </div>
       </div>
       <input type="file" id="mPhotoIn" accept="image/*" hidden>
+      <div class="mbig"><b class="num" id="mBigK">—</b><span>kcal</span></div>
+      <div class="mmacs">
+        <div><span><i style="background:var(--pro)"></i>蛋白質</span><b class="num" id="mvP">0 g</b></div>
+        <div><span><i style="background:var(--carb)"></i>碳水</span><b class="num" id="mvC">0 g</b></div>
+        <div><span><i style="background:var(--fat)"></i>脂肪</span><b class="num" id="mvF">0 g</b></div>
+        <div><span><i style="background:var(--fib)"></i>纖維</span><b class="num" id="mvFb">0 g</b></div>
+      </div>
     </div>
-    <div class="grid4">
-      <div class="field full"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
-      <div class="field"><label for="mP">蛋白質 g</label><input id="mP" type="number" inputmode="decimal" min="0" step="0.1"></div>
-      <div class="field"><label for="mC">碳水 g</label><input id="mC" type="number" inputmode="decimal" min="0" step="0.1"></div>
-      <div class="field"><label for="mF">脂肪 g</label><input id="mF" type="number" inputmode="decimal" min="0" step="0.1"></div>
-      <div class="field"><label for="mFb">膳食纖維 g</label><input id="mFb" type="number" inputmode="decimal" min="0" step="0.1"></div>
+    <div class="mcard mqty">
+      <div class="mstep"><button type="button" class="sb" id="mMinus" aria-label="減少份量">−</button>
+        <div class="sv"><input id="mQty" type="number" inputmode="decimal" min="0" step="any" placeholder="1" aria-label="數量"><span id="mUnitLab"></span></div>
+        <button type="button" class="sb" id="mPlus" aria-label="增加份量">+</button></div>
+      <div class="mquick" id="mQuick" role="group" aria-label="快速選份量"><button type="button" data-q="0.5">½</button><button type="button" data-q="1">1</button><button type="button" data-q="1.5">1.5</button><button type="button" data-q="2">2</button></div>
+      <div class="munits" id="mUnits" role="group" aria-label="單位"></div>
+      <select id="mUnit" hidden aria-hidden="true" tabindex="-1"></select>
+      <div class="hint" id="mCalcHint" hidden></div>
     </div>
-    <label class="check" for="mSaveMy"><input type="checkbox" id="mSaveMy">存到「我的食物」，下次可以直接選（含照片）</label>
-    <div class="actions">
-      <div class="field"><label for="mMeal">餐別</label><select id="mMeal"></select></div>
-      <button class="btn primary" type="submit" id="mSubmit">加入紀錄</button>
-    </div>
-    <button class="btn" type="button" id="mDelete" hidden style="color:var(--warn)">刪除這項</button>
+    <details class="mcard mfold" id="mFold"><summary>修改熱量和營養素</summary>
+      <div class="grid4">
+        <div class="field full"><label for="mK">熱量 kcal</label><input id="mK" type="number" inputmode="decimal" min="0" required></div>
+        <div class="field"><label for="mP">蛋白質 g</label><input id="mP" type="number" inputmode="decimal" min="0" step="0.1"></div>
+        <div class="field"><label for="mC">碳水 g</label><input id="mC" type="number" inputmode="decimal" min="0" step="0.1"></div>
+        <div class="field"><label for="mF">脂肪 g</label><input id="mF" type="number" inputmode="decimal" min="0" step="0.1"></div>
+        <div class="field"><label for="mFb">膳食纖維 g</label><input id="mFb" type="number" inputmode="decimal" min="0" step="0.1"></div>
+      </div>
+    </details>
+    <label class="check msavemy" for="mSaveMy"><input type="checkbox" id="mSaveMy">存到「我的食物」，下次可以直接選</label>
+    <select id="mMeal" hidden aria-hidden="true" tabindex="-1"></select>
+    <div class="gsave msave"><button class="btn primary" type="submit" id="mSubmit">加入紀錄</button></div>
+    <button class="btn mdel" type="button" id="mDelete" hidden>刪除這項</button>
   </form>
 </div></div>
 
@@ -1364,20 +1431,41 @@ function showLabel(target,L){
 }
 
 /* manual */
-function fill(n,k,p,c,f,fb){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mFb").value=r1(fb)}
-function chip(label,k,onclick){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=label;const s=document.createElement("span");s.textContent=k;b.append(s);b.onclick=onclick;return b}
+function fill(n,k,p,c,f,fb){$("mName").value=n;$("mK").value=k;$("mP").value=p;$("mC").value=c;$("mF").value=f;$("mFb").value=r1(fb);updSubmit()}
 const fmtQ=q=>String(q>=10?Math.round(q):r1(q));
-let editingId=null, selFood=null, units=[], unitIdx=0, fCat="全部";
+let editingId=null, selFood=null, selMy=null, units=[], unitIdx=0, fCat="全部", mTab="recent", recentList=[], myManaging=false;
 
-/* unit choices: the food's own serving first, then weight or volume units; generic labels for custom foods */
+/* unit choices: the food's own serving first, then weight or volume units; generic labels for custom foods.
+   The hidden select keeps the value; the chips are what people tap. */
 function fillUnits(lab){
   units=selFood?[{lab:selFood.sl,base:selFood.sa,t:`${selFood.sl}（約 ${selFood.sa} ${selFood.b}）`}].concat(UNITS[selFood.b].map(([u,m,t])=>({lab:u,base:m,t})))
                :GENERIC_UNITS.map(u=>({lab:u,base:null,t:u}));
   const sel=$("mUnit"); sel.textContent="";
   units.forEach((u,i)=>{const o=document.createElement("option");o.value=i;o.textContent=u.t;sel.append(o)});
   unitIdx=Math.max(0,units.findIndex(u=>u.lab===lab)); sel.value=String(unitIdx);
+  const box=$("mUnits"); box.textContent="";
+  units.forEach((u,i)=>{const b=document.createElement("button");b.type="button";b.textContent=u.lab;b.title=u.t;
+    b.onclick=()=>{if(i===unitIdx)return;$("mUnit").value=String(i);$("mUnit").dispatchEvent(new Event("change"))};box.append(b)});
+  syncQty();
 }
+/* stepper size and quick picks follow the unit: weights move by 10, servings by half */
+const isFine=u=>u&&["g","ml","cc"].includes(u.lab);
+function syncQty(){
+  const u=units[unitIdx], q=+$("mQty").value;
+  [...$("mUnits").children].forEach((b,i)=>{b.classList.toggle("on",i===unitIdx);b.setAttribute("aria-pressed",i===unitIdx)});
+  $("mUnitLab").textContent=u?u.lab:"";
+  $("mQuick").hidden=isFine(u);
+  for(const b of $("mQuick").children){const on=+b.dataset.q===q;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)}
+}
+function setQty(q){$("mQty").value=q>0?fmtQ(q):"";$("mQty").dispatchEvent(new Event("input"))}
+function stepQty(dir){
+  const u=units[unitIdx], st=isFine(u)?10:u&&/oz/.test(u.lab)?1:0.5, q=+$("mQty").value||0;
+  setQty(Math.max(st,Math.round((q+dir*st)/st)*st));
+}
+$("mMinus").onclick=()=>stepQty(-1); $("mPlus").onclick=()=>stepQty(1);
+for(const b of $("mQuick").children) b.onclick=()=>setQty(+b.dataset.q);
 function recalc(){
+  syncQty();
   const q=+$("mQty").value, u=units[unitIdx]; if(!(q>0)||!u)return;
   /* a "my foods" entry scales from its own saved amount, keeping any numbers the user adjusted */
   if(selMy&&selMy.q>0){
@@ -1392,14 +1480,52 @@ function recalc(){
 function pickFood(f,q,lab){
   selFood=f; selMy=null; $("mName").value=f.n; fillUnits(lab||f.sl); $("mQty").value=q||1; recalc();
   $("fPicked").hidden=false; $("fPickedName").textContent=f.n;
-  $("mCalcHint").hidden=false; $("mCalcHint").textContent="熱量和營養素會依份量自動換算，也可以直接修改數字。";
-  showFoodList(false); $("fSearch").blur();
-  $("fPicked").scrollIntoView({block:"start",behavior:"smooth"});
+  $("mCalcHint").hidden=true;
+  $("fSearch").blur(); manualStep(2);
 }
-/* the list only shows while searching, so the portion and nutrient fields stay in view */
-function showFoodList(on){$("fCats").hidden=!on;$("fList").hidden=!on;if(on){renderCats();renderFoods()}}
-$("fSearch").addEventListener("focus",()=>showFoodList(true));
-function clearFood(lab){selFood=null;selMy=null;$("fPicked").hidden=true;$("mCalcHint").hidden=true;fillUnits(lab||"份")}
+/* two steps: 1 = pick a food (lists + search), 2 = confirm the amount and numbers; editing opens straight at step 2 */
+function manualStep(n){
+  $("manualChips").hidden=n!==1; $("manualForm").hidden=n!==2;
+  $("mBack").hidden=n!==2||!!editingId;
+  $("manualTitle").textContent=editingId?"編輯食物":n===2?"確認份量":"手動紀錄";
+  /* the nutrient fields stay folded unless there is no number yet (custom food) */
+  if(n===2) $("mFold").open=!(+$("mK").value>0);
+  $("sheetManual").scrollTop=0; syncMeal();
+}
+/* meal segment mirrors the hidden select; the submit button names the meal and the kcal being added */
+function syncMeal(){for(const b of $("mMealSeg").children){const on=b.dataset.v===$("mMeal").value;b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)};updSubmit()}
+const mealName=()=>{const m=MEALS.find(x=>x[0]===$("mMeal").value);return m?m[1]:"紀錄"};
+function updSubmit(){
+  const k=Math.round(+$("mK").value||0), btn=$("mSubmit");
+  btn.textContent=editingId?"儲存修改":"加入"+mealName();
+  if(k>0){const sm=document.createElement("small");sm.className="num";sm.textContent=fmtN(k)+" kcal";btn.append(sm)}
+  /* food card: big kcal, nutrient dots, where the numbers come from */
+  $("mBigK").textContent=k>0?fmtN(k):"—";
+  for(const [id,v] of [["mvP","mP"],["mvC","mC"],["mvF","mF"],["mvFb","mFb"]]) $(id).textContent=r1(+$(v).value||0)+" g";
+  $("mSrc").textContent=selFood?`台灣常見食物・1 ${selFood.sl}約 ${selFood.sa} ${selFood.b}`:selMy?"我的食物":editingId?"":"自訂食物，熱量請在下面填";
+  updThumb();
+}
+function updThumb(){
+  const box=$("mThumb"); if(!$("mPhotoPrev").hidden){box.hidden=true;return}
+  box.hidden=false; box.textContent=""; box.append(monoTile($("mName").value.trim()||"?"));
+}
+for(const b of $("mMealSeg").children) b.onclick=()=>{$("mMeal").value=b.dataset.v;syncMeal()};
+for(const id of ["mK","mP","mC","mF","mFb"]) $(id).addEventListener("input",updSubmit);
+$("mName").addEventListener("input",updThumb);
+/* kcal is required but may sit in the folded section: open it before the browser checks the form */
+$("mSubmit").addEventListener("click",()=>{if(!$("mK").value)$("mFold").open=true});
+function customFood(name){
+  clearFood(); setMPhoto(null); $("mName").value=name||""; $("mQty").value=1; syncQty(); manualStep(2);
+  setTimeout(()=>$(name?"mK":"mName").focus(),50);
+}
+/* bring the search box to the top so the results are not hidden under the keyboard */
+$("fSearch").addEventListener("focus",()=>setTimeout(()=>$("fSearch").scrollIntoView({block:"start",behavior:"smooth"}),300));
+$("mCustom").onclick=()=>customFood($("fSearch").value.trim());
+$("mBack").onclick=()=>{
+  const meal=$("mMeal").value; $("manualForm").reset(); $("mMeal").value=meal;
+  clearFood(); setMPhoto(null); manualStep(1); renderPick();
+};
+function clearFood(lab){selFood=null;selMy=null;$("fPicked").hidden=true;$("mCalcHint").hidden=true;fillUnits(lab||"份");updSubmit()}
 $("fClear").onclick=()=>clearFood();
 $("mQty").addEventListener("input",recalc);
 $("mUnit").addEventListener("change",()=>{
@@ -1408,62 +1534,90 @@ $("mUnit").addEventListener("change",()=>{
   if(selFood&&q>0&&units[unitIdx]&&units[next]) $("mQty").value=fmtQ(q*units[unitIdx].base/units[next].base);
   unitIdx=next; recalc();
 });
+
+/* ---- step 1: one list, switched by tabs (recent / my foods / categories) or replaced by search results ---- */
+function thumbFor(name,photo){
+  const t=monoTile(name);
+  if(photo) photoURL(photo).then(u=>{if(u){t.textContent="";t.style.background="none";const im=document.createElement("img");im.alt="";im.src=u;t.append(im)}});
+  return t;
+}
+/* o: {name,sub,kcal,photo,tag,open,add,del} */
+function pickRow(o){
+  const r=document.createElement("div"); r.className="mrow";
+  const m=document.createElement("button"); m.type="button"; m.className="mmain";
+  const t=document.createElement("span"); t.className="mt";
+  const n=document.createElement("span"); n.className="mn"; n.textContent=o.name;
+  if(o.tag){const tg=document.createElement("span");tg.className="tag my";tg.textContent=o.tag;n.append(tg)}
+  const s=document.createElement("span"); s.className="ms"; s.textContent=o.sub||"";
+  t.append(n,s);
+  const k=document.createElement("span"); k.className="kc num"; k.innerHTML=`${fmtN(o.kcal)}<small>kcal</small>`;
+  m.append(thumbFor(o.name,o.photo),t,k); m.onclick=o.open;
+  const a=document.createElement("button"); a.type="button";
+  if(o.del){a.className="madd del";a.textContent="×";a.setAttribute("aria-label","從我的食物移除 "+o.name);a.onclick=o.del}
+  else{a.className="madd";a.textContent="+";a.setAttribute("aria-label",`直接加入 ${o.name}（${o.sub||"1 份"}）`);
+    a.onclick=()=>{o.add();a.classList.add("done");a.textContent="✓";setTimeout(()=>{a.classList.remove("done");a.textContent="+"},1200)}}
+  r.append(m,a); return r;
+}
+/* "+" adds right away with the shown amount; the toast offers undo */
+function quickAdd(v){
+  const meal=$("mMeal").value, k=state.date, id=uid(), mn=mealName();
+  const it=Object.assign({id,meal,src:"manual",name:v.name,portion:v.portion||"",kcal:Math.round(+v.kcal||0),p:r1(v.p),c:r1(v.c),f:r1(v.f),fb:r1(v.fb),t:Date.now()},
+    v.q?{q:v.q,u:v.u}:{}, v.fn?{fn:v.fn}:{}, v.photo?{photo:v.photo}:{});
+  cache.days[k]=(cache.days[k]||[]).concat(it); render(); markDay(k);
+  toast(`已加入「${v.name}」到${mn}`,()=>{cache.days[k]=(cache.days[k]||[]).filter(i=>i.id!==id);cache.del[id]={k,t:Date.now()};render();markDay(k)});
+}
+const dayLabel=k=>{const d=Math.round((new Date(state.date)-new Date(k))/864e5);return d===0?"今天":d===1?"昨天":+k.slice(5,7)+"/"+ +k.slice(8)};
+function openRecent(i){
+  const f=i.fn&&findFood(i.fn);
+  if(f) pickFood(f,i.q,i.u); else clearFood(i.u);
+  $("mQty").value=i.q?fmtQ(i.q):""; fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb);
+  setMPhoto(i.photo||null); manualStep(2);
+}
+function dbVal(f){return {name:f.n,kcal:f.k,p:f.p,c:f.c,f:f.f,fb:f.fb,q:1,u:f.sl,portion:"1 "+f.sl,fn:f.n}}
+function dbRow(f){return pickRow({name:f.n,sub:`1 ${f.sl}・約 ${f.sa} ${f.b}`,kcal:f.k,open:()=>pickFood(f),add:()=>quickAdd(dbVal(f))})}
+function myRow(f,tag){
+  return pickRow({name:f.name,sub:f.portion||"自訂份量",kcal:f.kcal,photo:f.photo,tag,
+    open:()=>{$("fSearch").blur();useMy(f)},add:()=>quickAdd(Object.assign({},f,{portion:f.portion||""})),
+    del:myManaging&&!tag?()=>{deleteMy(f.id);toast("已從我的食物移除「"+f.name+"」");renderPick()}:null});
+}
 function renderCats(){
   const box=$("fCats"); box.textContent="";
   ["全部",...new Set(FOODS.map(f=>f.cat))].forEach(c=>{
     const b=document.createElement("button");b.type="button";b.className="chip"+(c===fCat?" on":"");b.textContent=c;
-    b.onclick=()=>{fCat=c;renderCats();renderFoods()};box.append(b);
+    b.onclick=()=>{fCat=c;renderPick()};box.append(b);
   });
 }
-function renderFoods(){
+function renderPick(){
   let q=$("fSearch").value.trim(); q=ALIAS[q]||q;
-  const list=FOODS.filter(f=>(fCat==="全部"||f.cat===fCat)&&(!q||f.n.includes(q)||f.cat.includes(q)));
-  const mine=q?myList().filter(f=>f.name.includes(q)).slice(0,10):[];
-  const box=$("fList"); box.textContent="";
-  for(const f of mine){
-    const b=document.createElement("button");b.type="button";b.className="frow";
-    b.innerHTML=`<span><span class="fn"></span><span class="tag my">我的</span><br><span class="fs"></span></span><span class="fk"></span>`;
-    b.querySelector(".fn").textContent=f.name;
-    b.querySelector(".fs").textContent=f.portion||"自訂份量";
-    b.querySelector(".fk").textContent=f.kcal+" kcal";
-    b.onclick=()=>{showFoodList(false);$("fSearch").blur();useMy(f)}; box.append(b);
+  const mine=myList(), box=$("fList"); box.textContent="";
+  const tabs={recent:recentList.length,my:mine.length,cat:1};
+  if(!tabs[mTab]) mTab=recentList.length?"recent":mine.length?"my":"cat";
+  for(const b of $("mTabs").querySelectorAll("[data-t]")){
+    const t=b.dataset.t; b.hidden=!tabs[t]; b.classList.toggle("on",t===mTab); b.setAttribute("aria-selected",t===mTab);
+    if(t==="my") b.textContent="我的食物"+(mine.length?" "+mine.length:"");
   }
-  if(!list.length&&!mine.length){const d=document.createElement("div");d.className="none";d.textContent="清單裡沒有這個食物，可以直接在下面自己填，或改用「描述」讓 AI 估算。";box.append(d);return}
-  for(const f of list.slice(0,80)){
-    const b=document.createElement("button");b.type="button";b.className="frow";
-    b.innerHTML=`<span><span class="fn"></span><br><span class="fs"></span></span><span class="fk"></span>`;
-    b.querySelector(".fn").textContent=f.n;
-    b.querySelector(".fs").textContent=`1 ${f.sl}・約 ${f.sa} ${f.b}`;
-    b.querySelector(".fk").textContent=f.k+" kcal";
-    b.onclick=()=>pickFood(f); box.append(b);
+  $("mTabs").hidden=!!q; $("myManage").hidden=!!q||mTab!=="my"; $("myManage").textContent=myManaging?"完成":"管理";
+  $("fCats").hidden=!!q||mTab!=="cat"; if(!$("fCats").hidden) renderCats();
+  const add=el=>box.append(el);
+  if(q){
+    mine.filter(f=>f.name.includes(q)).slice(0,10).forEach(f=>add(myRow(f,"我的")));
+    FOODS.filter(f=>f.n.includes(q)||f.cat.includes(q)).slice(0,80).forEach(f=>add(dbRow(f)));
+    if(!box.children.length){const d=document.createElement("div");d.className="none";d.textContent="清單裡沒有這個食物，可以點下面「自己輸入熱量」，或改用「描述」讓 AI 估算。";add(d)}
+  } else if(mTab==="recent"){
+    recentList.forEach(([i,k])=>add(pickRow({name:i.name,sub:[i.portion,dayLabel(k)].filter(Boolean).join("・"),kcal:Math.round(i.kcal),photo:i.photo,
+      open:()=>openRecent(i),add:()=>quickAdd({name:i.name,kcal:i.kcal,p:i.p,c:i.c,f:i.f,fb:i.fb,q:i.q,u:i.u,fn:i.fn,portion:i.portion,photo:i.photo})})));
+  } else if(mTab==="my"){
+    mine.forEach(f=>add(myRow(f)));
+  } else {
+    FOODS.filter(f=>fCat==="全部"||f.cat===fCat).slice(0,80).forEach(f=>add(dbRow(f)));
   }
+  box.hidden=!box.children.length;
 }
-$("fSearch").addEventListener("input",renderFoods);
+for(const b of $("mTabs").querySelectorAll("[data-t]")) b.onclick=()=>{mTab=b.dataset.t;myManaging=false;renderPick()};
+$("myManage").onclick=()=>{myManaging=!myManaging;renderPick()};
+$("fSearch").addEventListener("input",renderPick);
 
 /* ---- my foods: saved entries (with photo) to reuse ---- */
-let selMy=null, myManaging=false;
-function renderMy(){
-  const list=myList(), box=$("myList"); box.textContent="";
-  $("myWrap").hidden=!list.length; $("myManage").textContent=myManaging?"完成":"管理";
-  for(const f of list){
-    const b=document.createElement("div"); b.className="myf";
-    const ph=document.createElement("div"); ph.className="ph"; ph.textContent=f.name.slice(0,1);
-    if(f.photo) photoURL(f.photo).then(u=>{if(u){ph.textContent="";const im=document.createElement("img");im.alt="";im.src=u;ph.append(im)}});
-    const n=document.createElement("div"); n.className="n"; n.textContent=f.name;
-    const k=document.createElement("div"); k.className="k"; k.textContent=f.kcal+" kcal";
-    b.append(ph,n,k);
-    if(myManaging){
-      const x=document.createElement("button"); x.type="button"; x.className="x"; x.textContent="×"; x.setAttribute("aria-label","從我的食物移除 "+f.name);
-      x.onclick=()=>{deleteMy(f.id);renderMy();toast("已從我的食物移除「"+f.name+"」")};
-      b.append(x);
-    } else {
-      b.tabIndex=0; b.setAttribute("role","button"); b.setAttribute("aria-label",`${f.name} ${f.kcal} kcal`);
-      b.onclick=()=>useMy(f); b.onkeydown=e=>{if(e.key==="Enter")useMy(f)};
-    }
-    box.append(b);
-  }
-}
-$("myManage").onclick=()=>{myManaging=!myManaging;renderMy()};
 function useMy(f){
   const db=f.fn&&findFood(f.fn);
   if(db) pickFood(db,f.q,f.u); else {clearFood(f.u||"份"); $("mQty").value=f.q?fmtQ(f.q):""}
@@ -1472,47 +1626,44 @@ function useMy(f){
   setMPhoto(f.photo||null);
   $("mSaveMy").checked=false;   /* already saved; checking it again would replace the saved amount */
   $("mCalcHint").hidden=false; $("mCalcHint").textContent="已帶入「我的食物」，改數量會依比例換算。";
-  $("mName").scrollIntoView({block:"center",behavior:"smooth"});
+  manualStep(2);
 }
 const findFood=n=>FOODS.find(f=>f.n===n);
 function manualMode(edit){
   editingId=edit||null;
-  $("manualTitle").textContent=edit?"編輯食物":"手動紀錄";
-  $("manualChips").hidden=!!edit; $("mDelete").hidden=!edit;
-  $("mSubmit").textContent=edit?"儲存修改":"加入紀錄";
+  $("mDelete").hidden=!edit;
 }
 function openEdit(id){
   const it=(cache.days[state.date]||[]).find(i=>i.id===id); if(!it)return;
   $("manualForm").reset(); manualMode(id); mealSelect($("mMeal")); $("mMeal").value=it.meal;
   const f=it.fn&&findFood(it.fn);
-  if(f){selFood=f;$("fPicked").hidden=false;$("fPickedName").textContent=f.n;fillUnits(it.u);$("mCalcHint").hidden=false;$("mCalcHint").textContent="改數量或單位會重新換算熱量。"}
+  if(f){selFood=f;selMy=null;$("fPicked").hidden=false;$("fPickedName").textContent=f.n;fillUnits(it.u);$("mCalcHint").hidden=false;$("mCalcHint").textContent="改數量或單位會重新換算熱量。"}
   else{clearFood(it.u); if(!it.q&&it.portion){$("mCalcHint").hidden=false;$("mCalcHint").textContent="原本份量：「"+it.portion+"」，可以改用數量和單位重新選。"}}
-  $("mQty").value=it.q?fmtQ(it.q):"";
+  $("mQty").value=it.q?fmtQ(it.q):""; syncQty();
   fill(it.name,Math.round(it.kcal),r1(it.p),r1(it.c),r1(it.f),it.fb);
   setMPhoto(it.photo||null);
   $("mSaveMy").checked=myList().some(f=>f.name===it.name);
-  show("sheetManual");
+  show("sheetManual"); manualStep(2);
 }
-/* photo picked in the manual / edit sheet: kept as a file until the form is saved */
+/* photo picked in the manual / edit sheet: kept as a file until the form is saved; the food's tile is the photo button */
 let mPh={id:null,file:null,removed:false}, mPhUrl=null;
 function setMPhoto(id){
   if(mPhUrl){URL.revokeObjectURL(mPhUrl);mPhUrl=null}
   mPh={id,file:null,removed:false}; $("mPhotoIn").value="";
   const im=$("mPhotoPrev"); im.hidden=true; im.removeAttribute("src");
-  if(id) photoURL(id).then(u=>{if(u&&mPh.id===id&&!mPh.file){im.src=u;im.hidden=false}});
-  $("mPhotoBtn").textContent=id?"換一張":"加入照片"; $("mPhotoDel").hidden=!id;
+  if(id) photoURL(id).then(u=>{if(u&&mPh.id===id&&!mPh.file){im.src=u;im.hidden=false;updThumb()}});
+  $("mPhotoDel").hidden=!id; updThumb();
 }
 $("mPhotoIn").onchange=e=>{
   const f=e.target.files&&e.target.files[0]; if(!f)return;
   if(mPhUrl)URL.revokeObjectURL(mPhUrl); mPhUrl=URL.createObjectURL(f);
   mPh.file=f; mPh.removed=false;
-  $("mPhotoPrev").src=mPhUrl; $("mPhotoPrev").hidden=false; $("mPhotoBtn").textContent="換一張"; $("mPhotoDel").hidden=false;
+  $("mPhotoPrev").src=mPhUrl; $("mPhotoPrev").hidden=false; $("mPhotoDel").hidden=false; updThumb();
 };
 $("mPhotoDel").onclick=()=>{
   mPh.file=null; mPh.removed=true; $("mPhotoIn").value="";
-  $("mPhotoPrev").hidden=true; $("mPhotoPrev").removeAttribute("src"); $("mPhotoBtn").textContent="加入照片"; $("mPhotoDel").hidden=true;
+  $("mPhotoPrev").hidden=true; $("mPhotoPrev").removeAttribute("src"); $("mPhotoDel").hidden=true; updThumb();
 };
-$("mPhotoPrev").onclick=()=>{if($("mPhotoPrev").src){$("viewerImg").src=$("mPhotoPrev").src;$("viewer").hidden=false}};
 function openViewer(id){
   photoURL(id).then(u=>{
     if(!u){toast("這張照片還沒下載到這台裝置，請確認已連上 GitHub");return}
@@ -1530,22 +1681,15 @@ $("toManual").onclick=()=>$("addManual").onclick();
 $("addManual").onclick=()=>{
   $("manualForm").reset(); manualMode(null); clearFood(); setMPhoto(null);
   mealSelect($("mMeal"));
-  $("fSearch").value=""; showFoodList(false);
+  $("fSearch").value=""; fCat="全部"; myManaging=false;
   const seen=new Map();
-  Object.keys(cache.days).sort().reverse().slice(0,14).forEach(k=>(cache.days[k]||[]).slice().reverse().forEach(i=>{if(!seen.has(i.name)&&seen.size<10)seen.set(i.name,i)}));
-  const rc=$("recentChips"); rc.textContent="";
-  seen.forEach(i=>rc.append(chip(i.name,Math.round(i.kcal),()=>{
-    const f=i.fn&&findFood(i.fn);
-    if(f){pickFood(f,i.q,i.u);fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb)}
-    else{clearFood(i.u);$("mQty").value=i.q?fmtQ(i.q):"";fill(i.name,Math.round(i.kcal),r1(i.p),r1(i.c),r1(i.f),i.fb)}
-  })));
-  $("recentWrap").hidden=!seen.size;
-  myManaging=false; renderMy();
-  show("sheetManual");
-  clampRows(rc,3);
+  Object.keys(cache.days).sort().reverse().slice(0,14).forEach(k=>(cache.days[k]||[]).slice().reverse().forEach(i=>{if(!seen.has(i.name)&&seen.size<10)seen.set(i.name,[i,k])}));
+  recentList=[...seen.values()];
+  mTab=recentList.length?"recent":myList().length?"my":"cat";
+  renderPick();
+  show("sheetManual"); manualStep(1);
 };
-/* keep only the chips on the first n wrapped rows */
-function clampRows(box,n){const tops=[];[...box.children].forEach(c=>{const t=c.offsetTop;if(!tops.includes(t))tops.push(t);if(tops.indexOf(t)>=n)c.remove()})}
+
 $("manualForm").addEventListener("submit",e=>{e.preventDefault();
   const q=+$("mQty").value, u=units[+$("mUnit").value];
   const old=editingId&&(cache.days[state.date]||[]).find(x=>x.id===editingId);
