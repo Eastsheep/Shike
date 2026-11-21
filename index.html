@@ -73,7 +73,16 @@ button{cursor:pointer}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;height:36px;min-width:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none}
 .iconbtn:disabled{opacity:.4}
-.datebar{display:flex;align-items:center;gap:6px;padding-block:14px 4px}
+.datebar{display:flex;align-items:center;gap:6px;padding-block:12px 2px}
+.datebar .iconbtn{border:0;background:none;min-width:32px;padding:0 6px;font-size:20px;color:var(--muted)}
+.weekstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding-block:6px 4px;touch-action:pan-y}
+.wday{border:0;background:none;border-radius:14px;padding:6px 0 7px;display:grid;justify-items:center;gap:3px;font-size:11px;color:var(--muted)}
+.wday b{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:16px;font-weight:500;color:var(--ink);line-height:1.2}
+.wday i{width:5px;height:5px;border-radius:50%;background:transparent}
+.wday.has i{background:var(--accent);opacity:.7}.wday.has.over i{background:var(--warn)}
+.wday.today b{color:var(--accent);font-weight:700}
+.wday.sel{background:var(--ink);color:var(--bg)}.wday.sel b{color:var(--bg)}.wday.sel.has i{background:var(--bg);opacity:1}
+.wday:disabled{opacity:.35;cursor:default}
 .datebar h1{font-family:var(--f-display);font-size:24px;margin:0;font-weight:700}
 .datebar .wd{color:var(--muted);font-size:14px;margin-left:4px}
 .datebar .sp{flex:1}
@@ -158,7 +167,7 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 .photopick{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .photopick img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--line);cursor:zoom-in}
 .photopick .btn{min-height:40px;cursor:pointer}
-.meal li.hasph{grid-template-columns:46px 1fr auto}
+.mono{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:20px;flex:none}
 .thumb{width:46px;height:46px;border-radius:12px;object-fit:cover;background:var(--accent-soft);cursor:zoom-in;display:block}
 .viewer{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .viewer img{max-width:100%;max-height:100%;border-radius:8px;object-fit:contain}
@@ -172,7 +181,7 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
 @keyframes pulse{50%{box-shadow:0 0 0 8px var(--accent-soft)}}
 @media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
 .meal ul{list-style:none;margin:0;padding:0}
-.meal li{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 16px}
+.meal li{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;padding:10px 16px}
 .meal li:last-child{padding-bottom:14px}
 .meal li .kc{font-weight:700;font-size:15px;white-space:nowrap}
 .meal li .kc small{font-size:11px;color:var(--muted);font-weight:400;margin-left:2px}
@@ -297,12 +306,13 @@ section.meal{background:var(--surface);border-radius:20px;margin-block:14px;over
   </div>
 
   <div class="datebar">
-    <button class="iconbtn" id="prevDay" aria-label="前一天">‹</button>
     <h1 id="dateTitle">今天</h1><span class="wd" id="dateWd"></span>
     <span class="sp"></span>
     <button class="pill" id="todayBtn" hidden>回到今天</button>
-    <button class="iconbtn" id="nextDay" aria-label="後一天">›</button>
+    <button class="iconbtn" id="prevDay" aria-label="上一週">‹</button>
+    <button class="iconbtn" id="nextDay" aria-label="下一週">›</button>
   </div>
+  <div class="weekstrip" id="weekStrip" role="group" aria-label="選擇日期"></div>
 
   <div class="hero">
     <div class="summary">
@@ -900,11 +910,37 @@ function mealSuggest(mk,items,left,isToday){
   if(!later.includes(mk))return 0;
   return Math.round(left/later.length/10)*10;
 }
+/* the Sunday-to-Saturday week holding the viewed day; a dot marks days with food logged (red when >10% over goal) */
+function weekStart(k){return shift(k,-parseKey(k).getDay())}
+function renderStrip(k,today){
+  const box=$("weekStrip"), st=weekStart(k); box.textContent="";
+  for(let i=0;i<7;i++){
+    const dk=shift(st,i), d=parseKey(dk), items=cache.days[dk]||[], b=document.createElement("button");
+    b.type="button"; b.className="wday"+(dk===k?" sel":"")+(dk===today?" today":"");
+    if(items.length){b.classList.add("has"); if(totals(items).k>goalFor(dk).kcal*1.1)b.classList.add("over")}
+    b.disabled=dk>today; b.setAttribute("aria-label",(d.getMonth()+1)+"月"+d.getDate()+"日 週"+WD[d.getDay()]+(items.length?"，有紀錄":""));
+    if(dk===k)b.setAttribute("aria-current","date");
+    b.innerHTML=`${WD[d.getDay()]}<b>${d.getDate()}</b><i></i>`;
+    b.onclick=()=>go(dk); box.append(b);
+  }
+  $("nextDay").disabled=shift(st,6)>=today;
+}
+/* food without a photo gets a soft tile with its first character, colour picked from the name */
+const MONO=[["#E8F1EA","#2C7650"],["#FBEDE3","#B4562A"],["#FDF4DC","#9A6B08"],["#E6EEF8","#3866A6"],["#F3E8F3","#8A4C88"],["#E9F3F2","#2F7C77"]];
+const MONO_D=[["#1E3326","#8FD3A9"],["#3A2618","#F0A060"],["#352B12","#E8C066"],["#1C2A3D","#9CC2FF"],["#33213A","#D8A4D6"],["#17312F","#86D0C9"]];
+function monoTile(name){
+  const t=document.createElement("span"); t.className="mono"; t.setAttribute("aria-hidden","true");
+  const ch=[...(name||"?").replace(/^[\s\d.,()（）\[\]【】]+/,"")][0]||"?";
+  let h=0; for(const c of name||"") h=(h*31+c.codePointAt(0))>>>0;
+  const pal=matchMedia("(prefers-color-scheme: dark)").matches?MONO_D:MONO, [bg,fg]=pal[h%pal.length];
+  t.style.background=bg; t.style.color=fg; t.textContent=ch.toUpperCase();
+  return t;
+}
 function render(){
   const k=state.date, today=keyOf(new Date()), d=parseKey(k);
   $("dateTitle").textContent=k===today?"今天":k===shift(today,-1)?"昨天":(d.getMonth()+1)+"月"+d.getDate()+"日";
   $("dateWd").textContent=(k===today||k===shift(today,-1)?(d.getMonth()+1)+"/"+d.getDate()+" ":"")+"週"+WD[d.getDay()];
-  $("todayBtn").hidden=k===today; $("nextDay").disabled=k>=today;
+  $("todayBtn").hidden=k===today; renderStrip(k,today);
   $("setupBanner").hidden=ghReady()&&!!cfg.dsKey;
   const items=cache.days[k]||[], t=totals(items), g=goalFor(k), act=cache.activity[k], dyn=profile().dyn||{};
   if(!$("sheetAct").hidden&&document.activeElement!==$("aK")&&document.activeElement!==$("aSteps")) fillActSheet();
@@ -966,7 +1002,7 @@ function render(){
           im.onclick=e=>{e.stopPropagation();openViewer(it.photo)};
           photoURL(it.photo).then(u=>{if(u)im.src=u});
           li.prepend(im);
-        }
+        } else li.prepend(monoTile(it.name));
         ul.append(li);
       }
       sec.append(ul);
@@ -1649,8 +1685,13 @@ window.addEventListener("hashchange",importFromHash);
 
 /* date nav */
 function go(k){state.date=k;render();sync()}
-$("prevDay").onclick=()=>go(shift(state.date,-1));
-$("nextDay").onclick=()=>{const t=keyOf(new Date());if(state.date<t)go(shift(state.date,1))};
+$("prevDay").onclick=()=>go(shift(state.date,-7));
+$("nextDay").onclick=()=>{const t=keyOf(new Date()), n=shift(state.date,7); if(weekStart(state.date)<weekStart(t))go(n>t?t:n)};
+/* swipe the week strip left/right to change week */
+{let sx=null,sy=0; const ws=$("weekStrip");
+ ws.addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+ ws.addEventListener("touchend",e=>{if(sx===null)return; const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy; sx=null;
+   if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)(dx<0?$("nextDay"):$("prevDay")).click()},{passive:true});}
 $("todayBtn").onclick=()=>go(keyOf(new Date()));
 
 render(); importFromHash(); sync(); startHealthWait();
