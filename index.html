@@ -736,8 +736,19 @@ function b64enc(str){const b=new TextEncoder().encode(str);let s="";for(let i=0;
 function b64dec(b64){const s=atob(b64.replace(/\n/g,""));const b=new Uint8Array(s.length);for(let i=0;i<s.length;i++)b[i]=s.charCodeAt(i);return new TextDecoder().decode(b)}
 function ghUrl(path){return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${path}`}
 function ghHeaders(){return{"Authorization":"Bearer "+cfg.token,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}}
+/* GitHub sometimes answers 5xx for a moment: retry twice before giving up. A rate limit is reported as its own error. */
+async function ghFetch(url,opt){
+  for(let i=0;;i++){
+    let r=null,err=null;
+    try{r=await fetch(url,opt)}catch(e){err=e}
+    if(r&&(r.status===403||r.status===429)&&(r.headers.get("x-ratelimit-remaining")==="0"||r.headers.get("retry-after")))throw {status:"rate"};
+    if(i<2&&(err||r.status>=500)){await new Promise(ok=>setTimeout(ok,1000*(i*2+1)));continue}
+    if(err)throw err;
+    return r;
+  }
+}
 async function ghGet(path){
-  const r=await fetch(ghUrl(path)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
+  const r=await ghFetch(ghUrl(path)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
   if(r.status===404)return null;
   if(!r.ok)throw {status:r.status};
   const j=await r.json();
@@ -746,7 +757,7 @@ async function ghGet(path){
 async function ghPut(path,data,sha,msg){
   const body={message:msg,content:b64enc(JSON.stringify(data,null,1))};
   if(sha)body.sha=sha;
-  const r=await fetch(ghUrl(path),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify(body)});
+  const r=await ghFetch(ghUrl(path),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify(body)});
   if(!r.ok)throw {status:r.status};
   return (await r.json()).content.sha;
 }
@@ -783,11 +794,11 @@ const newPhotoId=k=>monthOf(k)+"/"+uid();
 const photoURLs=new Map(), photoMiss=new Map();   /* id → time of the last failed download */
 function blobB64(b){return new Promise((ok,bad)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(",")[1]);r.onerror=bad;r.readAsDataURL(b)})}
 async function ghPutBin(path,blob){
-  const r=await fetch(ghUrl(path),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:"照片 "+path,content:await blobB64(blob)})});
+  const r=await ghFetch(ghUrl(path),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:"照片 "+path,content:await blobB64(blob)})});
   if(!r.ok&&r.status!==422)throw {status:r.status};   /* 422: already uploaded */
 }
 async function ghGetRaw(path){
-  const r=await fetch(ghUrl(path),{headers:Object.assign(ghHeaders(),{"Accept":"application/vnd.github.raw"}),cache:"no-store"});
+  const r=await ghFetch(ghUrl(path),{headers:Object.assign(ghHeaders(),{"Accept":"application/vnd.github.raw"}),cache:"no-store"});
   return r.ok?await r.blob():null;
 }
 async function photoURL(id){
@@ -819,7 +830,7 @@ async function shrinkBlob(file){
 }
 
 /* ---------- sync ---------- */
-let syncing=false, syncErr=null, pulled=new Set();
+let syncing=false, syncErr=null, syncStep="", pulled=new Set();
 function setSync(){
   /* a small dot next to the name; the words show only on error, the full text goes to screen readers and a toast on tap */
   const el=$("syncState"), wait=cache.dirtyMonths.length||cache.dirtyProfile||cache.dirtyMy||cache.pendingPhotos.length;
@@ -828,9 +839,12 @@ function setSync(){
 }
 function ghErrText(e){
   if(e&&e.status===401)return "GitHub token 無效或過期";
+  if(e&&e.status==="rate")return "GitHub 暫時限制使用次數，請過幾分鐘再試";
   if(e&&(e.status===403||e.status===404))return "找不到 repo 或 token 沒有權限";
+  if(e&&e.status>=500)return "GitHub 伺服器錯誤 "+e.status+"，GitHub 那邊的問題，稍後再試";
   if(e&&e.status)return "GitHub 錯誤 "+e.status;
-  return "連不上 GitHub";
+  if(e instanceof TypeError&&/fetch|network|load/i.test(e.message||""))return "連不上 GitHub";
+  return "資料處理錯誤："+((e&&e.message)||e);
 }
 async function pullMonth(m){
   const got=await ghGet(monthPath(m));
@@ -867,17 +881,17 @@ async function pushMonth(m){
 const HEALTH_RE=/^(\d{4}-\d{2}-\d{2})_(\d{14})\.json$/;
 const tsMs=s=>new Date(+s.slice(0,4),+s.slice(4,6)-1,+s.slice(6,8),+s.slice(8,10),+s.slice(10,12),+s.slice(12,14)).getTime();
 async function ghList(dir){
-  const r=await fetch(ghUrl(dir)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
+  const r=await ghFetch(ghUrl(dir)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
   if(r.status===404)return [];
   if(!r.ok)throw {status:r.status};
   const j=await r.json(); return Array.isArray(j)?j:[];
 }
 async function ghDelete(path,sha,msg){
-  const r=await fetch(ghUrl(path),{method:"DELETE",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:msg,sha})});
+  const r=await ghFetch(ghUrl(path),{method:"DELETE",headers:Object.assign({"Content-Type":"application/json"},ghHeaders()),body:JSON.stringify({message:msg,sha})});
   if(!r.ok&&r.status!==404)throw {status:r.status};
 }
 async function ghGetText(path){
-  const r=await fetch(ghUrl(path)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
+  const r=await ghFetch(ghUrl(path)+"?t="+Date.now(),{headers:ghHeaders(),cache:"no-store"});
   if(!r.ok)throw {status:r.status};
   return b64dec((await r.json()).content||"");
 }
@@ -914,31 +928,38 @@ async function sync(){
   if(!ghReady()||syncing){setSync();return}
   syncing=true; syncErr=null; setSync();
   try{
+    syncStep="讀取目標";
     if(!cache.profile||!pulled.has("profile")){
       const p=await ghGet("profile.json"); pulled.add("profile");
       if(p){cache.shas["profile.json"]=p.sha; if(!cache.dirtyProfile) cache.profile=p.data}
     }
+    syncStep="讀取我的食物";
     if(!pulled.has("myfoods")){
       const p=await ghGet("myfoods.json"); pulled.add("myfoods");
       if(p){cache.shas["myfoods.json"]=p.sha; cache.myfoods=cache.dirtyMy?mergeMy(cache.myfoods,(p.data&&p.data.foods)||[]):((p.data&&p.data.foods)||[])}
     }
+    syncStep="讀取紀錄";
     for(const m of new Set([monthOf(state.date),monthOf(shift(state.date,-6))])) if(!pulled.has(m)) await pullMonth(m);
+    syncStep="讀取健康數據";
     if(!pulled.has("health")){
       pulled.add("health");
       const n=await pullHealth();
       if(n)toast(`已從健康 App 同步 ${n} 天的活動消耗`);
     }
+    syncStep="上傳紀錄";
     while(cache.dirtyMonths.length){
       const m=cache.dirtyMonths[0];
       await pushMonth(m);
       cache.dirtyMonths=cache.dirtyMonths.filter(x=>x!==m);
       saveCache();
     }
+    syncStep="上傳目標";
     if(cache.dirtyProfile){
       try{cache.shas["profile.json"]=await ghPut("profile.json",cache.profile,cache.shas["profile.json"],"更新目標")}
       catch(e){ if(e&&(e.status===409||e.status===422)){const p=await ghGet("profile.json");cache.shas["profile.json"]=await ghPut("profile.json",cache.profile,p&&p.sha,"更新目標")} else throw e }
       cache.dirtyProfile=false;
     }
+    syncStep="上傳我的食物";
     if(cache.dirtyMy){
       try{cache.shas["myfoods.json"]=await ghPut("myfoods.json",{foods:cache.myfoods},cache.shas["myfoods.json"],"更新我的食物")}
       catch(e){
@@ -949,6 +970,7 @@ async function sync(){
       }
       cache.dirtyMy=false;
     }
+    syncStep="上傳照片";
     while(cache.pendingPhotos.length){
       const id=cache.pendingPhotos[0], b=await PDB.get(id);
       if(b) await ghPutBin(photoPath(id),b);
@@ -956,7 +978,7 @@ async function sync(){
       saveCache();
     }
     saveCache();
-  }catch(e){syncErr=ghErrText(e)}
+  }catch(e){console.error("sync",syncStep,e);syncErr=syncStep+"時："+ghErrText(e)}
   syncing=false; setSync(); render();
   if(!syncErr&&(cache.dirtyMonths.length||cache.dirtyProfile||cache.dirtyMy||cache.pendingPhotos.length)) sync();
 }
