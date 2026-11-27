@@ -23,7 +23,7 @@
   - `profile.json`：`{goal:{kcal,p,c,f,fb}, calc:{bmr,tdee,factor,sel,adj,kcal,formula,lbm}, body:{sex,age,h,w,bf,act,goal}, dyn:{on,mode,ratio}}`（`mode` 為 `lazy`/`precise`；舊資料只有 `on`，`on:true` 視為精打細算）
 - 本機快取在 localStorage `shike:cache`，設定（GitHub 帳號/repo/token、DeepSeek key/model）在 `shike:cfg`。token 和 key 只存在瀏覽器，絕不寫進 repo。
 - 食物 item：`{id,meal(b/l/d/s),src(photo/text/label/manual),name,portion,kcal,p,c,f,fb,t, q?,u?,fn?}`；`fb` 是膳食纖維（g），舊資料沒有就當 0；`fn` 是 foods.js 的名稱，`q/u` 是數量與單位，編輯時用來還原。
-- 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`）。
+- 同步：`dirtyMonths` 記錄待上傳月份；PUT 遇 409/422 會重抓再合併。GitHub 請求都走 `ghFetch`：5xx／網路錯誤自動重試 2 次（1、3 秒），限流另報；失敗訊息前面帶步驟（`syncStep`，如「上傳照片時：」），方便使用者點紅點回報。**活動消耗用時間戳 `t` 取較新的那筆**（`newerAct`）。
 - 食物以 item 為單位合併（`mergeDays`）：本頁沒有未上傳修改時直接用遠端；有的話依 id 聯集、`mt||t` 較新者勝、刪除記在月檔 `del:{id:{k,t}}`（保留 60 天），讓舊頁面不能把刪掉的東西帶回來、也不會覆蓋別頁新增的項目。頁面回到前景／取得焦點／bfcache 還原時會重新拉資料（`refreshFromGitHub`，5 秒節流）。
 - 月檔格式：`{days, activity, del}`。
 - 健康數據新管道：捷徑直接 PUT `health/YYYY-MM-DD_yyyyMMddHHmmss.json`（內容 `{"d","a","s"}`，免 sha）。`pullHealth` 列出資料夾、每天取最新一檔套用（手動值較新則保留手動）、清掉舊檔；`healthSeen` 記錄已處理的時間。舊的 `#d=&a=&s=` 網址匯入仍保留。
